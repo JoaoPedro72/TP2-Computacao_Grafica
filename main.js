@@ -36,11 +36,6 @@ async function main() {
     const sol = new SolModelo(setupGL);
     const aviao = new AviaoModelo(setupGL);
     const terreno = new Terreno(setupGL, [100, 100]);
-    terreno.build();
-    const modeloTerreno = new Modelo({setupGL: setupGL});
-
-    modeloTerreno.meshes = terreno.meshes;
-    modeloTerreno.textures = terreno.textures;
 
     
 
@@ -68,17 +63,18 @@ async function main() {
 
         // 🔥 PASS 1 (shadow)
         setupGL.renderShadowPass((program, lightMatrix) => {
-            modeloTerreno.draw(program, twgl.m4.identity(), lightMatrix);
+            terreno.draw(program, twgl.m4.identity(), lightMatrix);
             aviao.draw(program, twgl.m4.identity(),time, lightMatrix);
         });
 
         // 🔥 PASS 2 (render normal)
         setupGL.renderScene((program) => {
-            modeloTerreno.draw(program, twgl.m4.identity());
+            terreno.draw(program, twgl.m4.identity());
             aviao.draw(program, twgl.m4.identity(),time);
             sol.draw(program, twgl.m4.identity(),time);
         });
 
+        console.log(camera.pos);
         requestAnimationFrame(render);
     }
 

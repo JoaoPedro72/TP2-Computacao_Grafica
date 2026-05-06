@@ -94,10 +94,10 @@ export function generateGrid({
     const perlin = new Perlin(seed);
     const grid = [];
 
-    for (let y = 0; y < y_size; y++) {
+    for (let x = 0; x < x_size; x++) {
         let row = [];
 
-        for (let x = 0; x < x_size; x++) {
+        for (let y = 0; y < y_size; y++) {
             let nx = (x + offsetX) / scale;
             let ny = (y + offsetY) / scale;
 
