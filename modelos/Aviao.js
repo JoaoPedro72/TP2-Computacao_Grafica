@@ -8,7 +8,7 @@ export class AviaoModelo{
     }
     async load(){
         this.root = new Modelo({
-            pos: [0, 0, 0],
+            pos: [0, 10, 0],
             rot: [0, 0, 0],
             scale: [2, 2, 2],
             setupGL: this.setupGL,

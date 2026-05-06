@@ -113,8 +113,8 @@ export class Terreno {
     // ================= MESH =================
     buildMeshes(size=1, tile=8){
 
-        const rows = this.tamanhoMapa[0];
-        const cols = this.tamanhoMapa[1];
+        const width = this.tamanhoMapa[0];
+        const depth = this.tamanhoMapa[1];
 
         const meshData = {};
 
@@ -130,8 +130,11 @@ export class Terreno {
             return meshData[bioma];
         };
 
-        for(let z=0;z<rows-1;z++){
-            for(let x=0;x<cols-1;x++){
+        const offsetX = (width - 1) * size * 0.5;
+        const offsetZ = (depth - 1) * size * 0.5;
+
+        for(let z=0;z<depth-1;z++){
+            for(let x=0;x<width-1;x++){
 
                 const bioma = this.pos[x][z][3];
                 const mesh = getMesh(bioma);
@@ -148,11 +151,12 @@ export class Terreno {
                 for(let [vx,vz] of verts){
                     const y = this.pos[vx][vz][0];
 
-                    mesh.position.push(vx*size, y*5, vz*size);
+                    mesh.position.push(vx * size - offsetX, y * 5, vz * size - offsetZ
+                    );
 
                     mesh.texcoord.push(
-                        (vx/cols)*tile,
-                        (vz/rows)*tile
+                        (vx / width) * tile,
+                        (vz / depth) * tile
                     );
 
                     mesh.normal.push(0,1,0);
@@ -191,32 +195,37 @@ export class Terreno {
 
     // ================= MESH oceano =================
     buildWater(size = 1, tile = 8) {
-        const rows = this.tamanhoMapa[0];
-        const cols = this.tamanhoMapa[1];
+        const width = this.tamanhoMapa[0];
+        const depth = this.tamanhoMapa[1];
 
         const position = [];
         const texcoord = [];
         const normal = [];
         const indices = [];
 
-        // ===== vértices (plano inteiro) =====
+        // centralização
+        const offsetX = (width - 1) * size * 0.5;
+        const offsetZ = (depth - 1) * size * 0.5;
+
+        // plano cobrindo o mapa inteiro
         const verts = [
             [0, 0],
-            [cols, 0],
-            [0, rows],
-            [cols, rows]
+            [width - 1, 0],
+            [0, depth - 1],
+            [width - 1, depth - 1]
         ];
 
         for (let [x, z] of verts) {
+
             position.push(
-                x * size,
-                0, // 🔥 altura fixa (mar)
-                z * size
+                x * size - offsetX,
+                0,
+                z * size - offsetZ
             );
 
             texcoord.push(
-                (x / cols) * tile,
-                (z / rows) * tile
+                (x / width) * tile,
+                (z / depth) * tile
             );
 
             normal.push(0, 1, 0);
@@ -229,18 +238,21 @@ export class Terreno {
         );
 
         const arrays = {
-            a_position: { numComponents:3, data: position },
-            a_texcoord:{ numComponents:2, data: texcoord },
-            a_normal:  { numComponents:3, data: normal },
+            a_position: { numComponents: 3, data: position },
+            a_texcoord: { numComponents: 2, data: texcoord },
+            a_normal: { numComponents: 3, data: normal },
             indices
         };
 
-        const bufferInfo = twgl.createBufferInfoFromArrays(this.setupGL.gl, arrays);
+        const bufferInfo = twgl.createBufferInfoFromArrays(
+            this.setupGL.gl,
+            arrays
+        );
 
         this.meshes.push({
             bufferInfo,
-            bioma: "agua", // 🔥 chave da textura
-            isWater: true  // opcional (pra shader depois)
+            bioma: "agua",
+            isWater: true
         });
 
         this.textures["agua"] = this.setupGL.loadTexture(

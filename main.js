@@ -35,7 +35,7 @@ async function main() {
 
     const sol = new SolModelo(setupGL);
     const aviao = new AviaoModelo(setupGL);
-    const terreno = new Terreno(setupGL, [100, 100]);
+    const terreno = new Terreno(setupGL, [200, 200]);
     terreno.build();
     const modeloTerreno = new Modelo({setupGL: setupGL});
 
