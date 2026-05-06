@@ -3,7 +3,7 @@ const utills = new Utills();
 
 export class Camera {
     constructor(keys) {
-        this.pos = [0, 2, -2];
+        this.pos = [50, 30, -2];
         this.yaw = 90; //rotação horizontal
         this.pitch = -35; //rotação vertical
         this.keys = keys;

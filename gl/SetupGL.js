@@ -12,7 +12,7 @@ export class SetupGL {
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 
         // ☀️ sol
-        this.sunDirection = [0.5, 1, 0.3];
+        this.sunDirection = [0, 1, 0];
         this.sunStrength = 1.5; // 🔥 controle de intensidade
 
         // 🔥 tochas
@@ -139,7 +139,7 @@ export class SetupGL {
         };
     }
 
-    drawMesh(mesh, textures, modelMatrix, programInfo, lightMatrix, isEmissive = false) {
+    drawMesh(mesh, textures, modelMatrix, programInfo, lightMatrix, isEmissive = false, time) {
         const tex = textures[mesh.material];
 
         const maxLights = 8;
@@ -181,7 +181,10 @@ export class SetupGL {
 
             // 🎨 textura
             u_texture: tex || null,
-            u_useTexture: tex ? 1 : 0
+            u_useTexture: tex ? 1 : 0,
+
+            u_time: performance.now() * 0.001,
+            u_isWater: mesh.isWater ? 1 : 0
         };
 
         const gl = this.gl;

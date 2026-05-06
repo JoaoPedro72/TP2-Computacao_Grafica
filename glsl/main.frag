@@ -1,24 +1,29 @@
 precision mediump float;
+precision mediump int;
 
 varying vec3 v_normal;
 varying vec2 v_uv;
 varying vec4 v_lightPos;
 varying vec3 v_worldPos;
+varying float v_wave;
 
 uniform sampler2D u_texture;
-uniform int u_useTexture;
-
 uniform sampler2D u_shadowMap;
 
+uniform int u_useTexture;
+uniform int u_isWater;
+
+uniform float u_time;
+uniform float u_emissive;
+
+// ☀️ sol
 uniform vec3 u_sunDirection;
 uniform float u_sunStrength;
 
+// 🔥 tochas
 uniform vec3 u_pointLights[8];
 uniform float u_pointStrength[8];
 uniform int u_numPointLights;
-
-uniform float u_emissive;
-uniform int u_isEmissive;
 
 //
 // 🌑 SHADOW MAP
@@ -35,7 +40,7 @@ float getShadow() {
     float closest = texture2D(u_shadowMap, proj.xy).r;
     float current = proj.z;
 
-    float bias = 0.005;
+    float bias = 0.003;
 
     return current - bias > closest ? 0.3 : 1.0;
 }
@@ -43,22 +48,36 @@ float getShadow() {
 void main() {
 
     vec3 normal = normalize(v_normal);
+    vec2 uv = v_uv;
 
     //
-    // 🎨 COR BASE (IMPORTANTE: guardar separado)
+    // 🎨 TEXTURA BASE
     //
-    vec4 baseColor = (u_useTexture == 1)
-        ? texture2D(u_texture, v_uv)
+    vec4 color = (u_useTexture == 1)
+        ? texture2D(u_texture, uv)
         : vec4(0.7,0.7,0.7,1.0);
-    
-    if (baseColor.a < 0.1) discard;
+
+    //
+    // 🌊 ÁGUA (espuma + profundidade)
+    //
+    if(u_isWater == 1){
+
+        float waveNorm = v_wave * 0.5 + 0.5;
+
+        float foam = smoothstep(0.6, 1.0, waveNorm);
+        float dark = smoothstep(0.0, 0.4, waveNorm);
+
+        color.rgb += foam * 0.35;
+        color.rgb *= 1.0 - dark * 0.25;
+    }
+
     //
     // 🌅 DIA / NOITE
     //
     float dayFactor = clamp(u_sunDirection.y * 0.5 + 0.5, 0.0, 1.0);
 
     //
-    // ☀️ + 🔥 + 🌙 LUZ
+    // 💡 LUZ
     //
     float light = 0.0;
 
@@ -80,41 +99,38 @@ void main() {
         light += diff * att * u_pointStrength[i];
     }
 
-    // 🌙 lua fake
-    float moon = max(dot(normal, vec3(0.2,1.0,0.3)), 0.0) * 0.2;
+    // 🌙 lua (leve)
+    float moon = max(dot(normal, vec3(0.2,1.0,0.3)), 0.0) * 0.15;
     light += moon * (1.0 - dayFactor);
 
     //
-    // 🌫️ AMBIENT
+    // 🌫️ AMBIENTE
     //
-    float ambient = mix(0.15, 0.4, dayFactor);
+    float ambient = mix(0.25, 0.45, dayFactor);
 
     //
     // 🌑 SOMBRA
     //
-    float shadow = u_isEmissive == 1 ? 1.0 : getShadow();
+    float shadow = getShadow();
 
-    //
-    // 💡 ILUMINAÇÃO APLICADA
-    //
-    vec3 litColor = baseColor.rgb;
-    litColor *= ambient + light * shadow;
 
-    //
-    // 🌌 NOITE (afeta só iluminação)
-    //
-    vec3 nightColor = vec3(0.2, 0.3, 0.5);
-    litColor = mix(nightColor * litColor, litColor, dayFactor);
+    if(u_emissive > 0.0){
 
-    //
-    // 🔥 EMISSIVO (TOTALMENTE INDEPENDENTE)
-    //
-    vec3 emissiveColor = baseColor.rgb * u_emissive;
+        // 🌟 emissivo puro (ignora luz)
+        //color.rgb = color.rgb + vec3(u_emissive);
 
-    //
-    // 🎯 FINAL
-    //
-    vec3 finalColor = litColor + emissiveColor;
+    } else {
 
-    gl_FragColor = vec4(finalColor, baseColor.a);
+        // 💡 iluminação normal
+        float lighting = ambient + light * shadow;
+        lighting = clamp(lighting, 0.0, 1.5);
+
+        color.rgb *= lighting;
+
+        // 🌌 noite
+        vec3 nightColor = vec3(0.2, 0.3, 0.5);
+        color.rgb = mix(nightColor * color.rgb, color.rgb, dayFactor);
+    }
+
+    gl_FragColor = color;
 }

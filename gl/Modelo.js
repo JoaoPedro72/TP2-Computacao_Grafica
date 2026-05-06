@@ -82,7 +82,7 @@ export class Modelo {
         return m;
     }
 
-    draw(programInfo, parentMatrix, lightMatrix) {
+    draw(programInfo, parentMatrix, lightMatrix, time = 0) {
         const local = this.getLocalMatrix();
         const world = twgl.m4.multiply(parentMatrix, local);
 
@@ -93,7 +93,8 @@ export class Modelo {
                 world,
                 programInfo,
                 lightMatrix,
-                this.isEmissive
+                this.isEmissive,
+                time
             );
         }
 

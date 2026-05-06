@@ -42,6 +42,8 @@ async function main() {
     modeloTerreno.meshes = terreno.meshes;
     modeloTerreno.textures = terreno.textures;
 
+    
+
     function render(time) {
         time *= 0.001;
         setupGL.normalizeSun();
