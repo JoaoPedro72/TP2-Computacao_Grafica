@@ -96,7 +96,7 @@ export class Parser{
                             part.position.push(...position);
 
                             // 🔥 CORREÇÃO UV (flip Y)
-                            part.texcoord.push(tex[0], 1 - tex[1]);
+                            part.texcoord.push(tex[0], tex[1]);
 
                             part.normal.push(...normal);
 

@@ -1,6 +1,13 @@
 import { SetupGL } from "./gl/SetupGL.js";
 import { Camera } from "./Camera.js";
+
 import { Modelo } from "./gl/Modelo.js";
+import { PlayerModelo } from "./modelos/player.js";
+import { SolModelo } from "./modelos/Sol.js";
+import { AviaoModelo } from "./modelos/aviao.js";
+import { Terreno } from "./modelos/Terreno.js";
+
+import * as twgl from "./twgl.full.module.js";
 
 let keys = {};
 const setupGL = new SetupGL();
@@ -26,50 +33,49 @@ async function main() {
     await setupGL.createProgram();
     setupGL.updateProjection(window);
 
-    // 🔥 cria tronco (pai)
-    const tronco = new Modelo({
-        pos: [0, 0, 0],
-        rot: [0, 0, 0],
-        scale: [1, 1, 1],
-        setupGL: setupGL
-    });
+    const sol = new SolModelo(setupGL);
+    const aviao = new AviaoModelo(setupGL);
+    const terreno = new Terreno(setupGL, [100, 100]);
+    terreno.build();
+    const modeloTerreno = new Modelo({setupGL: setupGL});
 
-    tronco.objUrl = "modelos/player/tronco.obj";
-    await tronco.loadFromOBJ();
-
-    // 🔥 cria braço (filho)
-    const braco = new Modelo({
-        pos: [-0.2, 0.5, 0], // posição relativa ao tronco
-        rot: [0, 0, 0],
-        scale: [1, 1, 1],
-        setupGL: setupGL
-    });
-
-    braco.objUrl = "modelos/player/braco.obj";
-    await braco.loadFromOBJ();
-
-    // 🔥 opcional: pivô (ex: ombro)
-    //braco.pivot = [0, 0, 0]; 
-    // ajuste depois se precisar (ex: [0, -5, 0])
-
-    // 🔥 conecta hierarquia
-    tronco.add(braco);
-
-    // 🔥 câmera
-    const cameraPos = [0, 5, 30];
+    modeloTerreno.meshes = terreno.meshes;
+    modeloTerreno.textures = terreno.textures;
 
     function render(time) {
         time *= 0.001;
+        setupGL.normalizeSun();
+
+        const speed = 0.2;
+
+        const angle = time * speed;
+
+        setupGL.sunDirection = [
+            Math.cos(angle),
+            Math.sin(angle),
+            0.3
+        ];
 
         setupGL.updateProjection(window);
+
         camera.updateCamera();
-        setupGL.clearScreen(camera.pos,camera.getTarget());
+        sol.root.pos = camera.pos;
+        setupGL.setCamera(camera.pos, camera.getTarget());
 
-        // 🔥 animação: braço girando
-        braco.rot[2] = Math.sin(time * 2) * 1.0;
+        setupGL.computeLightMatrix();
 
-        // 🔥 desenha tudo
-        tronco.draw();
+        // 🔥 PASS 1 (shadow)
+        setupGL.renderShadowPass((program, lightMatrix) => {
+            modeloTerreno.draw(program, twgl.m4.identity(), lightMatrix);
+            aviao.draw(program, twgl.m4.identity(),time, lightMatrix);
+        });
+
+        // 🔥 PASS 2 (render normal)
+        setupGL.renderScene((program) => {
+            modeloTerreno.draw(program, twgl.m4.identity());
+            aviao.draw(program, twgl.m4.identity(),time);
+            sol.draw(program, twgl.m4.identity(),time);
+        });
 
         requestAnimationFrame(render);
     }
