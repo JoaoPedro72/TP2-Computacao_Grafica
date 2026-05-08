@@ -1,9 +1,9 @@
 import { Modelo } from "../gl/Modelo.js";
 import { Utills } from "../Utills.js";
 
-import { PlayerModelo } from "../modelos/player.js";
+import { PlayerModelo } from "../modelos/Player.js";
 import { SolModelo } from "../modelos/Sol.js";
-import { AviaoModelo } from "../modelos/aviao.js";
+import { AviaoModelo } from "../modelos/Aviao.js";
 import { Terreno } from "../modelos/Terreno.js";
 import { Player } from "./Player.js";
 

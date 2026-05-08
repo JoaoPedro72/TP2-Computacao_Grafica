@@ -63,18 +63,26 @@ export class AviaoModelo{
             setupGL: this.setupGL,
             objUrl: "modelos/player/rightbraco.obj"
         });
+        this.vidro = new Modelo({
+            pos: [0, 0, 0],
+            rot: [0, 0, 0],
+            scale: [1, 1, 1],
+            setupGL: this.setupGL,
+            objUrl: "modelos/aviao/vidro.obj"
+        });
 
         await this.root.loadFromOBJ();
         await this.helice.loadFromOBJ();
         await this.faixa1.loadFromOBJ();
         await this.faixa2.loadFromOBJ();
         await this.faixa3.loadFromOBJ();
+        await this.vidro.loadFromOBJ();
         
         await this.tronco.loadFromOBJ();
         await this.leftBraco.loadFromOBJ();
         await this.rightBraco.loadFromOBJ();
 
-        this.root.add(this.helice);
+        
         this.root.add(this.faixa1);
         this.faixa1.add(this.faixa2);
         this.faixa2.add(this.faixa3);
@@ -82,6 +90,9 @@ export class AviaoModelo{
         this.root.add(this.tronco);
         this.tronco.add(this.leftBraco);
         this.tronco.add(this.rightBraco);
+
+        this.root.add(this.vidro);
+        this.root.add(this.helice);
 
         this.root.meshes[0].specularStrength=1;
         this.root.meshes[0].shininess = 64;
@@ -99,7 +110,7 @@ export class AviaoModelo{
     }
 
     draw(program, identity, lightMatrix, time){
-        this.helice.rot[2] = time*10;
+        this.helice.rot[2] = time*4;
 
         this.root.draw(program, identity, lightMatrix, time);
     }

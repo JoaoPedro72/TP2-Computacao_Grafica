@@ -1,7 +1,10 @@
 # Trabalho 2 de Computação Grafica
-Alunos: 
+## Alunos: 
 - João Pedro da Silva Alves
 - Gabriel Jovenal
+## [Link](https://joaopedro72.github.io/TP2-Computacao_Grafica/tela.html)
+## Descrição
+
 ## Feito
 - Câmera
 - Gráficos
