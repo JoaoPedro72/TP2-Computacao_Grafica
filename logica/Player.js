@@ -1,4 +1,4 @@
-import { AviaoModelo } from "../modelos/aviao.js";
+import { AviaoModelo } from "../modelos/Aviao.js";
 import { Utills } from "../Utills.js";
 const utills = new Utills();
 
