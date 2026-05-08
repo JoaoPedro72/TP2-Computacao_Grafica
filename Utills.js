@@ -116,4 +116,9 @@ export class Utills {
 
         return { x: x3, y: y3, z: z3 };
     }
+
+    menorAngulo(a, b) {
+        let diff = b - a;
+        return Math.atan2(Math.sin(diff), Math.cos(diff));
+    }
 }

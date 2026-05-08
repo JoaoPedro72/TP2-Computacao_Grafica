@@ -1,7 +1,8 @@
 import * as twgl from "../twgl.full.module.js";
 
 export class SetupGL {
-    constructor() {
+    constructor(camera) {
+        this.camera = camera;
         this.canvas = document.getElementById("glcanvas");
         this.gl = this.canvas.getContext("webgl2");
 
@@ -13,11 +14,12 @@ export class SetupGL {
 
         // ☀️ sol
         this.sunDirection = [0, 1, 0];
-        this.sunStrength = 1.5; // 🔥 controle de intensidade
+        this.sunStrength = 1; // 🔥 controle de intensidade
 
         // 🔥 tochas
         this.pointLights = [];
         this.pointStrength = [];
+        this.lights = 0;
 
         // 💾 caches (se ainda não tiver)
         this.modelCache = {};
@@ -87,6 +89,7 @@ export class SetupGL {
             lightProj,
             twgl.m4.inverse(lightView)
         );
+        return this.lightMatrix;
     }
 
     // 🔥 PASSO 1 (shadow map)
@@ -184,7 +187,12 @@ export class SetupGL {
             u_useTexture: tex ? 1 : 0,
 
             u_time: performance.now() * 0.001,
-            u_isWater: mesh.isWater ? 1 : 0
+            u_isWater: mesh.isWater ? 1 : 0,
+
+            u_cameraPos: this.camera.pos,
+
+            u_specularStrength: mesh.specularStrength ?? 0.3, // intensidade do brilho
+            u_shininess: mesh.shininess ?? 16.0,       // quão concentrado é
         };
 
         const gl = this.gl;
@@ -228,5 +236,12 @@ export class SetupGL {
         const d = this.sunDirection;
         const len = Math.hypot(d[0], d[1], d[2]) || 1;
         this.sunDirection = d.map(v => v / len);
+    }
+
+    addLight(pos, strength){
+        this.pointLights[this.lights] = pos;
+        this.pointStrength[this.lights] = strength;
+
+        this.lights ++;
     }
 }

@@ -169,7 +169,13 @@ export class Terreno{
 
         const bufferInfo = twgl.createBufferInfoFromArrays(this.setupGL.gl, arrays);
 
-        this.meshes = [{ bufferInfo, material: "atlas" }];
+
+        this.meshes = [{ 
+            bufferInfo, 
+            material: "atlas", 
+            specularStrength: 0, 
+            shininess: 4
+        }];
         this.textures = {
             atlas: this.setupGL.loadTexture(this.objUrl + "atlas.png")
         };
@@ -231,7 +237,9 @@ export class Terreno{
         this.meshes.push({
             bufferInfo,
             material: "atlas",
-            isWater: true
+            isWater: true,
+            specularStrength: 1.5, 
+            shininess: 128
         });
     }
     build(){
@@ -243,8 +251,8 @@ export class Terreno{
         this.root.meshes = this.meshes;
         this.root.textures = this.textures;
     }
-    draw(program, identity, lightMatrix){
-        this.root.draw(program, identity, lightMatrix);
+    draw(program, identity, lightMatrix, time){
+        this.root.draw(program, identity, lightMatrix, time);
     }
 }
 

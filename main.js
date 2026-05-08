@@ -1,17 +1,13 @@
 import { SetupGL } from "./gl/SetupGL.js";
 import { Camera } from "./Camera.js";
 
-import { Modelo } from "./gl/Modelo.js";
-import { PlayerModelo } from "./modelos/player.js";
-import { SolModelo } from "./modelos/Sol.js";
-import { AviaoModelo } from "./modelos/aviao.js";
-import { Terreno } from "./modelos/Terreno.js";
+import { Controle } from "./logica/Controle.js";
 
 import * as twgl from "./twgl.full.module.js";
 
 let keys = {};
-const setupGL = new SetupGL();
 const camera = new Camera(keys);
+const setupGL = new SetupGL(camera);
 
 setupGL.updateProjection(window);
 
@@ -33,17 +29,20 @@ async function main() {
     await setupGL.createProgram();
     setupGL.updateProjection(window);
 
-    const sol = new SolModelo(setupGL);
-    const aviao = new AviaoModelo(setupGL);
-    const terreno = new Terreno(setupGL, [100, 100]);
+    const controle = new Controle(setupGL, keys, camera);
 
-    
-
+    let deltaTime = 0;
+    let antes = 0;
     function render(time) {
         time *= 0.001;
+        deltaTime = time - antes;
+        if(deltaTime > 1) deltaTime =1;
+
         setupGL.normalizeSun();
 
-        const speed = 0.2;
+        controle.tick(deltaTime);
+
+        const speed = 0.1;
 
         const angle = time * speed;
 
@@ -55,26 +54,26 @@ async function main() {
 
         setupGL.updateProjection(window);
 
-        camera.updateCamera();
-        sol.root.pos = camera.pos;
+        
+        controle.sol.root.pos = camera.pos;
         setupGL.setCamera(camera.pos, camera.getTarget());
 
-        setupGL.computeLightMatrix();
+        const lightMatrix = setupGL.computeLightMatrix();
 
         // 🔥 PASS 1 (shadow)
         setupGL.renderShadowPass((program, lightMatrix) => {
-            terreno.draw(program, twgl.m4.identity(), lightMatrix);
-            aviao.draw(program, twgl.m4.identity(),time, lightMatrix);
+            controle.root.draw(program, twgl.m4.identity(), lightMatrix, time);
+            controle.terreno.draw(program, twgl.m4.identity(),null,time);
         });
 
         // 🔥 PASS 2 (render normal)
         setupGL.renderScene((program) => {
-            terreno.draw(program, twgl.m4.identity());
-            aviao.draw(program, twgl.m4.identity(),time);
-            sol.draw(program, twgl.m4.identity(),time);
+            controle.root.draw(program, twgl.m4.identity(),lightMatrix,time);
+            controle.terreno.draw(program, twgl.m4.identity(),lightMatrix,time);
+            controle.sol.draw(program, twgl.m4.identity(),lightMatrix,time * speed);
         });
 
-        console.log(camera.pos);
+        antes = time;
         requestAnimationFrame(render);
     }
 

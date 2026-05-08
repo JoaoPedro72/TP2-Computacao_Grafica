@@ -94,7 +94,6 @@ export class Entidade {
             this.distChao = 0;
         }else this.distChao = this.pos[1] - (heightX + heightZ)/2;
 
-        // guarda referência direta (🔴 importante pra performance)
         this._cell = this.map.pos[x][z][1];
     }
 }

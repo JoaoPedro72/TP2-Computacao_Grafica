@@ -99,7 +99,7 @@ export class Modelo {
         }
 
         for (let child of this.children) {
-            child.draw(programInfo, world, lightMatrix);
+            child.draw(programInfo, world, lightMatrix, time);
         }
     }
 }

@@ -45,12 +45,12 @@ export class PlayerModelo{
         this.tronco.pos[2] = pos[2];
     }
 
-    draw(program, identity, time, lightMatrix){
+    draw(program, identity, lightMatrix, time){
         if(this.falling){
             this.leftBraco.rot[0] = Math.sin(time * 4)/2 + Math.PI;
             this.rightBraco.rot[0] = Math.sin(time * 4)/2 + Math.PI;
         }
         
-        this.tronco.draw(program, identity, lightMatrix);
+        this.tronco.draw(program, identity, lightMatrix, time);
     }
 }

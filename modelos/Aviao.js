@@ -82,6 +82,9 @@ export class AviaoModelo{
         this.root.add(this.tronco);
         this.tronco.add(this.leftBraco);
         this.tronco.add(this.rightBraco);
+
+        this.root.meshes[0].specularStrength=1;
+        this.root.meshes[0].shininess = 64;
     }
 
     setPos(pos){
@@ -89,12 +92,15 @@ export class AviaoModelo{
         this.root.pos[1] = pos[1];
         this.root.pos[2] = pos[2];
     }
+    setRot(rot){
+        this.root.rot[0] = rot[0];
+        this.root.rot[1] = rot[1];
+        this.root.rot[2] = rot[2];
+    }
 
-    draw(program, identity, time, lightMatrix){
+    draw(program, identity, lightMatrix, time){
         this.helice.rot[2] = time*10;
-        this.faixa1.rot[1] = Math.sin(time)/8;
-        this.faixa2.rot[1] = -Math.sin(time)/4;
-        this.faixa3.rot[1] = Math.sin(time)/4;
-        this.root.draw(program, identity, lightMatrix);
+
+        this.root.draw(program, identity, lightMatrix, time);
     }
 }

@@ -5,13 +5,13 @@ varying vec3 v_normal;
 varying vec2 v_uv;
 varying vec4 v_lightPos;
 varying vec3 v_worldPos;
-varying float v_wave;
 
 uniform sampler2D u_texture;
 uniform sampler2D u_shadowMap;
 
 uniform int u_useTexture;
 uniform int u_isWater;
+varying float v_wave;
 
 uniform float u_time;
 uniform float u_emissive;
@@ -24,6 +24,13 @@ uniform float u_sunStrength;
 uniform vec3 u_pointLights[8];
 uniform float u_pointStrength[8];
 uniform int u_numPointLights;
+
+// 📷 câmera (NOVO)
+uniform vec3 u_cameraPos;
+
+// ✨ controle specular (NOVO)
+uniform float u_specularStrength;
+uniform float u_shininess;
 
 //
 // 🌑 SHADOW MAP
@@ -48,44 +55,64 @@ float getShadow() {
 void main() {
 
     vec3 normal = normalize(v_normal);
-    vec2 uv = v_uv;
 
     //
-    // 🎨 TEXTURA BASE
+    // 🎨 TEXTURA
     //
     vec4 color = (u_useTexture == 1)
-        ? texture2D(u_texture, uv)
+        ? texture2D(u_texture, v_uv)
         : vec4(0.7,0.7,0.7,1.0);
 
     //
-    // 🌊 ÁGUA (espuma + profundidade)
+    // 🌊 ÁGUA
     //
     if(u_isWater == 1){
-
         float waveNorm = v_wave * 0.5 + 0.5;
 
         float foam = smoothstep(0.6, 1.0, waveNorm);
         float dark = smoothstep(0.0, 0.4, waveNorm);
 
-        color.rgb += foam * 0.35;
-        color.rgb *= 1.0 - dark * 0.25;
+        color.rgb += foam * 0.4;
+        color.rgb *= 1.0 - dark * 0.4;
     }
+
+    //
+    // 🔥 EMISSIVO (não recebe luz)
+    //
+    if(u_emissive > 0.0){
+        gl_FragColor = color;
+        return;
+    }
+
+    //
+    // 📷 direção da câmera
+    //
+    vec3 viewDir = normalize(u_cameraPos - v_worldPos);
 
     //
     // 🌅 DIA / NOITE
     //
     float dayFactor = clamp(u_sunDirection.y * 0.5 + 0.5, 0.0, 1.0);
 
-    //
-    // 💡 LUZ
-    //
     float light = 0.0;
+    float specular = 0.0;
 
-    // ☀️ sol
-    float sun = max(dot(normal, normalize(u_sunDirection)), 0.0);
-    light += sun * u_sunStrength * dayFactor;
+    //
+    // ☀️ SOL
+    //
+    vec3 sunDir = normalize(u_sunDirection);
 
-    // 🔥 tochas
+    float diffSun = max(dot(normal, sunDir), 0.0);
+    light += diffSun * u_sunStrength * dayFactor;
+
+    // ✨ specular sol (Blinn-Phong)
+    vec3 halfDirSun = normalize(sunDir + viewDir);
+    float specSun = pow(max(dot(normal, halfDirSun), 0.0), u_shininess);
+    specular += specSun * u_specularStrength * dayFactor;
+
+    //
+    // 🔥 TOCHAS
+    //
     for(int i=0;i<8;i++){
         if(i>=u_numPointLights) break;
 
@@ -97,40 +124,44 @@ void main() {
         float att = 1.0/(1.0 + 0.2*dist + 0.05*dist*dist);
 
         light += diff * att * u_pointStrength[i];
+
+        // ✨ specular tochas
+        vec3 halfDir = normalize(dir + viewDir);
+        float spec = pow(max(dot(normal, halfDir), 0.0), u_shininess);
+        specular += spec * att * u_specularStrength;
     }
 
-    // 🌙 lua (leve)
-    float moon = max(dot(normal, vec3(0.2,1.0,0.3)), 0.0) * 0.15;
+    //
+    // 🌙 LUA
+    //
+    float moon = max(dot(normal, vec3(0.2,1.0,0.3)), 0.0) * 0.2;
     light += moon * (1.0 - dayFactor);
 
     //
-    // 🌫️ AMBIENTE
+    // 🌫️ AMBIENT
     //
-    float ambient = mix(0.25, 0.45, dayFactor);
+    float ambient = mix(0.2, 0.45, dayFactor);
 
     //
     // 🌑 SOMBRA
     //
     float shadow = getShadow();
 
+    //
+    // 💡 FINAL
+    //
+    float lighting = ambient + light * shadow;
 
-    if(u_emissive > 0.0){
+    color.rgb *= lighting;
 
-        // 🌟 emissivo puro (ignora luz)
-        //color.rgb = color.rgb + vec3(u_emissive);
+    // ✨ adiciona specular
+    color.rgb += specular;
 
-    } else {
-
-        // 💡 iluminação normal
-        float lighting = ambient + light * shadow;
-        lighting = clamp(lighting, 0.0, 1.5);
-
-        color.rgb *= lighting;
-
-        // 🌌 noite
-        vec3 nightColor = vec3(0.2, 0.3, 0.5);
-        color.rgb = mix(nightColor * color.rgb, color.rgb, dayFactor);
-    }
+    //
+    // 🌌 NOITE
+    //
+    vec3 nightColor = vec3(0.2, 0.3, 0.5);
+    color.rgb = mix(nightColor * color.rgb, color.rgb, dayFactor);
 
     gl_FragColor = color;
 }
