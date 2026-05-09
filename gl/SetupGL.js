@@ -28,6 +28,8 @@ export class SetupGL {
         // 🟣 shadow map
         this.shadowSize = 1024;
 
+        this.lightingEnabled = true;
+
         // Cria a textura de depth manualmente
         const depthTexture = this.gl.createTexture();
         this.gl.bindTexture(this.gl.TEXTURE_2D, depthTexture);
@@ -101,14 +103,14 @@ export class SetupGL {
     // ☀️ matriz da luz
     computeLightMatrix() {
         const lightPos = [
-            -this.sunDirection[0] * 100,
+            this.sunDirection[0] * 100,
             this.sunDirection[1] * 100,
             this.sunDirection[2] * 100
         ];
 
         const target = [50,0,50];
 
-        const lightView = twgl.m4.lookAt(lightPos, target, [0,1,0]);
+        const lightView = twgl.m4.lookAt(lightPos, target, [50,1,50]);
         const lightProj = twgl.m4.ortho(-50,50,-50,50,0.1,200);
 
         this.lightMatrix = twgl.m4.multiply(
@@ -199,6 +201,8 @@ export class SetupGL {
 
             u_lightMatrix: lightMatrix || this.lightMatrix,
             u_shadowMap: this.shadowTexture,
+
+            u_lighting: this.lightingEnabled ? 1 : 0,
 
             // ☀️ sol
             u_sunDirection: this.sunDirection,

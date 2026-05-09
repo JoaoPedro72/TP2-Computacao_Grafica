@@ -34,7 +34,7 @@ export class SolModelo{
     }
 
     draw(program, identity, lightMatrix, time){
-        this.root.rot[2] = -time + Math.PI;
+        this.root.rot[2] = time //+ Math.PI;
 
         this.root.draw(program, identity, lightMatrix, time);
     }

@@ -16,7 +16,8 @@ export class Controle {
         this.camera = camera;
         this.cameraWait = false;
         this.cameraWait2 = false;
-
+        this.lightingSwitch = false;
+        
         this.root = new Modelo({
             setupGL: setupGL
         });
@@ -40,7 +41,11 @@ export class Controle {
         this.aviao.setPos(this.player.pos);
     }
     tick(time){
-        
+        if(this.keys.l && !this.lightingSwitch){
+            this.lightingSwitch = true;
+            this.setupGL.lightingEnabled = !this.setupGL.lightingEnabled;
+        }
+        if(!this.keys.l) this.lightingSwitch = false;
         this.player.tick(time);
         this.aviao.setPos(this.player.pos);
         this.aviao.root.rot[1] = utills.radians(this.player.angulo);

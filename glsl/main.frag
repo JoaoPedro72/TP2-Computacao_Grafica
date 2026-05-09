@@ -16,6 +16,8 @@ varying float v_wave;
 uniform float u_time;
 uniform float u_emissive;
 
+uniform int u_lighting;
+
 // ☀️ sol
 uniform vec3 u_sunDirection;
 uniform float u_sunStrength;
@@ -57,50 +59,32 @@ void main() {
 
     vec3 normal = normalize(v_normal);
 
-    //
+
     // 🎨 TEXTURA
-    //
+
     vec4 color = (u_useTexture == 1)
         ? texture2D(u_texture, v_uv)
         : vec4(0.7,0.7,0.7,1.0);
 
-    //
-    // 🌊 ÁGUA
-    //
-    if(u_isWater == 1){
-        float waveNorm = v_wave * 0.5 + 0.5;
 
-        float foam = smoothstep(0.6, 1.0, waveNorm);
-        float dark = smoothstep(0.0, 0.4, waveNorm);
+    
 
-        color.rgb += foam * 0.4;
-        color.rgb *= 1.0 - dark * 0.4;
-    }
-
-    //
-    // 🔥 EMISSIVO (não recebe luz)
-    //
+    // 🔥 EMISSIVO (não escurece)
     if(u_emissive > 0.0){
         gl_FragColor = color;
         return;
     }
 
-    //
     // 📷 direção da câmera
-    //
     vec3 viewDir = normalize(u_cameraPos - v_worldPos);
 
-    //
     // 🌅 DIA / NOITE
-    //
     float dayFactor = clamp(u_sunDirection.y * 0.5 + 0.5, 0.0, 1.0);
 
     float light = 0.0;
     float specular = 0.0;
 
-    //
     // ☀️ SOL
-    //
     vec3 sunDir = normalize(u_sunDirection);
 
     float diffSun = max(dot(normal, sunDir), 0.0);
@@ -111,9 +95,7 @@ void main() {
     float specSun = pow(max(dot(normal, halfDirSun), 0.0), u_shininess);
     specular += specSun * u_specularStrength * dayFactor;
 
-    //
     // 🔥 TOCHAS
-    //
     for(int i=0;i<8;i++){
         if(i>=u_numPointLights) break;
 
@@ -132,37 +114,37 @@ void main() {
         specular += spec * att * u_specularStrength;
     }
 
-    //
     // 🌙 LUA
-    //
     float moon = max(dot(normal, vec3(0.2,1.0,0.3)), 0.0) * 0.2;
     light += moon * (1.0 - dayFactor);
 
-    //
     // 🌫️ AMBIENT
-    //
     float ambient = mix(0.2, 0.45, dayFactor);
 
-    //
     // 🌑 SOMBRA
-    //
     float shadow = getShadow();
 
-    //
-    // 💡 FINAL
-    //
     float lighting = ambient + light * shadow;
 
-    color.rgb *= lighting;
+    // 🌊 ÁGUA
+    if(u_isWater == 1){
+        float waveNorm = v_wave * 0.5 + 0.5;
 
-    // ✨ adiciona specular
-    color.rgb += specular;
+        float foam = smoothstep(0.6, 1.0, waveNorm);
+        float dark = smoothstep(0.0, 0.4, waveNorm);
 
-    //
-    // 🌌 NOITE
-    //
-    vec3 nightColor = vec3(0.2, 0.3, 0.5);
-    color.rgb = mix(nightColor * color.rgb, color.rgb, dayFactor);
+        color.rgb += foam * 0.4 * lighting;
+        color.rgb *= 1.0 - dark * 0.4;
+    }
 
+    if (u_lighting == 1) {
+        color.rgb *= lighting;
+        // ✨ adiciona specular
+        color.rgb += specular;
+        // 🌌 NOITE
+        vec3 nightColor = vec3(0.2, 0.3, 0.5);
+        color.rgb = mix(nightColor * color.rgb, color.rgb, dayFactor);
+    }
+    
     gl_FragColor = color;
 }
