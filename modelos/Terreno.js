@@ -7,9 +7,13 @@ class Biomas {
     constructor(){
         this.biomas = [
             { nome: "montanha", temp:[0.0,1.0], umi:[0.0,1.0], altura:[7.0,10.0] },
-            { nome: "floresta", temp:[0.4,0.8], umi:[0.5,1.0], altura:[0.2,7.0] },
+            
+            { nome: "deserto",  temp:[0.6,1.0], umi:[0.0,0.4], altura:[0.2,7.0] },
+            { nome: "tundra",   temp:[-1.0,0.3], umi:[0.0,0.3], altura:[0.2,7.0] },
+            { nome: "gelo",     temp:[-1.0,0.3], umi:[0.3,1.0], altura:[0.2,7.0] },
+
+            { nome: "floresta", temp:[0.3,0.8], umi:[0.5,1.0], altura:[0.2,7.0] },
             { nome: "planicie", temp:[0.3,0.7], umi:[0.3,0.7], altura:[0.2,7.0] },
-            { nome: "deserto",  temp:[0.7,1.0], umi:[0.0,0.3], altura:[0.2,7.0] },
 
             { nome: "praia",    temp:[0.0,1.0], umi:[0.0,1.0], altura:[-0.4,1] },
             { nome: "oceano",   temp:[0.0,1.0], umi:[0.0,1.0], altura:[-10.0,-0.4] }
@@ -42,6 +46,11 @@ export class Terreno{
         this.sementeUmidade = Math.random()*10000;
 
         this.pos = [];
+        // [x][z][0] Altura
+        //       [1] temperatura
+        //       [2] umidade
+        //       [3] Bioma
+        //       [4] entidades
         this.meshes = [];
         this.textures = {};
         this.objUrl= "modelos/terreno/";
@@ -93,14 +102,16 @@ export class Terreno{
             x_size:this.tamanhoMapa[0],
             y_size:this.tamanhoMapa[1],
             scale:30,
-            seed:this.sementeTemperatura
+            seed:this.sementeTemperatura,
+            heightScale: 2
         });
 
         const umi = generateGrid({
             x_size:this.tamanhoMapa[0],
             y_size:this.tamanhoMapa[1],
             scale:30,
-            seed:this.sementeUmidade
+            seed:this.sementeUmidade,
+            heightScale: 2
         });
 
         for(let x=0;x<this.tamanhoMapa[0];x++){
@@ -263,7 +274,9 @@ const BIOMA_UV = {
     oceano:    [2,1],
     montanha:  [2,2],
     planicie:  [2,3],
-    agua:      [3,1]
+    agua:      [3,1],
+    tundra:    [3,2],
+    gelo:      [3,3]
 };
 
 function getUVAtlas(col, row) {

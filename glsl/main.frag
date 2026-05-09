@@ -1,5 +1,5 @@
-precision mediump float;
-precision mediump int;
+precision highp float;
+precision highp int;
 
 varying vec3 v_normal;
 varying vec2 v_uv;
@@ -40,14 +40,15 @@ float getShadow() {
     proj = proj * 0.5 + 0.5;
 
     if(proj.x < 0.0 || proj.x > 1.0 ||
-       proj.y < 0.0 || proj.y > 1.0) {
+        proj.y < 0.0 || proj.y > 1.0 ||
+        proj.z < 0.0 || proj.z > 1.0) {
         return 1.0;
     }
 
     float closest = texture2D(u_shadowMap, proj.xy).r;
     float current = proj.z;
 
-    float bias = 0.003;
+    float bias = 0.01;
 
     return current - bias > closest ? 0.3 : 1.0;
 }

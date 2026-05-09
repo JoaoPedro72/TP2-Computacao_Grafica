@@ -1,5 +1,5 @@
-precision mediump float;
-precision mediump int;
+precision highp float;
+precision highp int;
 
 attribute vec3 a_position;
 attribute vec3 a_normal;
@@ -56,7 +56,7 @@ void main() {
         float freq = mix(0.2, 0.7, n);
         float phase = n * 6.28318;
 
-        float wave =
+        wave =
             sin(pos.x * freq + u_time + phase) +
             cos(pos.z * freq + u_time * 0.8 + phase);
 

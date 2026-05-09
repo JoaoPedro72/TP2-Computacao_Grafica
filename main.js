@@ -42,14 +42,14 @@ async function main() {
 
         controle.tick(deltaTime);
 
-        const speed = 0.1;
+        const speed = 0.01;
 
         const angle = time * speed;
 
         setupGL.sunDirection = [
             Math.cos(angle),
             Math.sin(angle),
-            0.3
+            0.0
         ];
 
         setupGL.updateProjection(window);
@@ -62,8 +62,8 @@ async function main() {
 
         // 🔥 PASS 1 (shadow)
         setupGL.renderShadowPass((program, lightMatrix) => {
+            controle.terreno.draw(program, twgl.m4.identity(),lightMatrix,time);
             controle.root.draw(program, twgl.m4.identity(), lightMatrix, time);
-            controle.terreno.draw(program, twgl.m4.identity(),null,time);
         });
 
         // 🔥 PASS 2 (render normal)

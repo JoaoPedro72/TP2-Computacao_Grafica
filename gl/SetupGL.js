@@ -28,16 +28,42 @@ export class SetupGL {
         // 🟣 shadow map
         this.shadowSize = 1024;
 
-        this.shadowFramebuffer = twgl.createFramebufferInfo(
-            this.gl,
-            [{
-                attachmentPoint: this.gl.DEPTH_ATTACHMENT,
-                format: this.gl.DEPTH_COMPONENT16, // 🔥 ESSENCIAL
-            }],
-            this.shadowSize,
-            this.shadowSize
+        // Cria a textura de depth manualmente
+        const depthTexture = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, depthTexture);
+        this.gl.texImage2D(
+            this.gl.TEXTURE_2D, 0,
+            this.gl.DEPTH_COMPONENT16,
+            this.shadowSize, this.shadowSize, 0,
+            this.gl.DEPTH_COMPONENT,
+            this.gl.UNSIGNED_SHORT,
+            null
         );
-        this.shadowTexture = this.shadowFramebuffer.attachments[0];
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+
+        // Cria o framebuffer e anexa só o depth
+        const shadowFBO = this.gl.createFramebuffer();
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, shadowFBO);
+        this.gl.framebufferTexture2D(
+            this.gl.FRAMEBUFFER,
+            this.gl.DEPTH_ATTACHMENT,
+            this.gl.TEXTURE_2D,
+            depthTexture,
+            0
+        );
+
+        // Sem color attachment — diz pro WebGL explicitamente
+        this.gl.drawBuffers([this.gl.NONE]);
+        this.gl.readBuffer(this.gl.NONE);
+
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+
+        // Guarda as referências
+        this.shadowFramebuffer = { framebuffer: shadowFBO };
+        this.shadowTexture = depthTexture;
     }
 
     async createProgram() {
@@ -75,15 +101,15 @@ export class SetupGL {
     // ☀️ matriz da luz
     computeLightMatrix() {
         const lightPos = [
-            -this.sunDirection[0] * 30,
-            -this.sunDirection[1] * 30,
-            -this.sunDirection[2] * 30
+            -this.sunDirection[0] * 100,
+            this.sunDirection[1] * 100,
+            this.sunDirection[2] * 100
         ];
 
-        const target = [0,0,0];
+        const target = [50,0,50];
 
         const lightView = twgl.m4.lookAt(lightPos, target, [0,1,0]);
-        const lightProj = twgl.m4.ortho(-20,20,-20,20,1,100);
+        const lightProj = twgl.m4.ortho(-50,50,-50,50,0.1,200);
 
         this.lightMatrix = twgl.m4.multiply(
             lightProj,
@@ -97,10 +123,15 @@ export class SetupGL {
         const gl = this.gl;
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowFramebuffer.framebuffer);
+
+        gl.disable(gl.CULL_FACE);
+
         gl.viewport(0, 0, this.shadowSize, this.shadowSize);
         gl.clear(gl.DEPTH_BUFFER_BIT);
 
         drawScene(this.depthProgramInfo, this.lightMatrix);
+
+        gl.enable(gl.CULL_FACE);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }

@@ -10,7 +10,7 @@ export class AviaoModelo{
         this.root = new Modelo({
             pos: [0, 0, 0],
             rot: [0, 0, 0],
-            scale: [2, 2, 2],
+            scale: [1, 1, 1],
             setupGL: this.setupGL,
             objUrl: "modelos/aviao/aviao.obj"
         });
