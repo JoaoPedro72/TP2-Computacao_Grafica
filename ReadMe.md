@@ -10,7 +10,7 @@
 - Gráficos
     1. Phong esta feito, falta dar valores aos materiais
     1. Dia/noite (até 10%)
-    1. :bomb: Sombras (12%) (está com defeito)
+    1. :bomb: Sombras (12%)
     1. Deve ser possível ativar/desativar o modelo de iluminação a partir de uma tecla (eg, L)
 - Mundo
     1. Objeto principal controlado por meio do teclado.
