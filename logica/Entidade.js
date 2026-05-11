@@ -52,6 +52,7 @@ export class Entidade {
     tick(deltaTime) {
         this.deltaTime = deltaTime;
         this.modelo.pos = this.pos;
+        this.modelo.rot[1] = utills.radians(this.angulo);
 
         this.tickLogica();
         this.tickAnimacao();
@@ -75,6 +76,9 @@ export class Entidade {
             this.velocidade[1] = 0;
             this.pos[1] = this.floor;
         }
+    }
+    virarParaMovimento(){
+        this.angulo = Math.atan2(this.velocidade[0], this.velocidade[2])
     }
 
     /**

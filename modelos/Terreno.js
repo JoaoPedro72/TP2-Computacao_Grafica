@@ -61,9 +61,9 @@ class Biomas {
         ];
         this.feature = {
             planicie: [
-                { nome: "casa1/casa.obj",     peso: 3},
-                { nome: "torre/torre.obj",    peso: 1},
-                { nome: "",         peso: 50}
+                { nome: "casa1/casa.obj",     peso: 10},
+                { nome: "torre/torre.obj",    peso: 3},
+                { nome: "",         peso: 100}
             ],
             floresta: [
                 { nome: "arvore/arvore.obj", peso: 5},
@@ -258,17 +258,30 @@ export class Terreno{
         const bufferInfo = twgl.createBufferInfoFromArrays(this.setupGL.gl, arrays);
 
 
-        this.meshes = [{ 
+        this.meshes.push({ 
             bufferInfo, 
             material: "atlas", 
+            alwaysRender: true,
             specularStrength: 0, 
             shininess: 4
-        }];
-        this.textures = {
-            atlas: this.setupGL.loadTexture(this.objUrl + "atlas.png")
-        };
+        });
+        this.textures.atlas = this.setupGL.loadTexture(this.objUrl + "atlas.png")
     }
-    buildWater(size=1){
+    buildFundo(){
+        const fundo = new Modelo({
+            pos: [this.tamanhoMapa[0]/2,-10,this.tamanhoMapa[1]/2],
+            scale: [this.tamanhoMapa[0],1,this.tamanhoMapa[1]],
+            setupGL: this.setupGL,
+            objUrl: "modelos/terreno/fundo.obj"
+        })
+        fundo.loadFromOBJ();
+        this.root.add(fundo);
+
+        this.meshes = fundo.meshes;
+        this.textures = fundo.textures;
+        console.log(fundo.meshes);
+    }
+    buildWater(){
         const sizeX = this.tamanhoMapa[0];
         const sizeZ = this.tamanhoMapa[1];
 
@@ -295,9 +308,9 @@ export class Terreno{
                     const [vx, vz] = verts[i];
 
                     position.push(
-                        vx * size,
+                        vx,
                         0,
-                        vz * size
+                        vz
                     );
 
                     texcoord.push(...uv[i]);
@@ -326,11 +339,13 @@ export class Terreno{
             bufferInfo,
             material: "atlas",
             isWater: true,
+            alwaysRender: true,
             specularStrength: 1.5, 
             shininess: 128
         });
     }
     build(){
+        this.buildFundo();
         this.createElevations();
         this.createBiomas();
         this.buildMeshes();
@@ -338,6 +353,10 @@ export class Terreno{
 
         this.root.meshes = this.meshes;
         this.root.textures = this.textures;
+
+        this.root.meshes.forEach(mesh => {
+            mesh.alwaysRender = true;
+        });
     }
     draw(program, identity, lightMatrix, time){
         this.root.draw(program, identity, lightMatrix, time);
@@ -354,7 +373,7 @@ export class Terreno{
                 objUrl: featUrl
             }) 
             let ent = new Entidade([x, 0, z], this, "feature", model);
-
+            ent.angulo = Math.random() * 360 - 180
             model.loadFromOBJ();
 
             this.entidades.push(ent);

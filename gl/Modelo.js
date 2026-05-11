@@ -88,6 +88,7 @@ export class Modelo {
 
         for (let mesh of this.meshes) {
             this.setupGL.drawMesh(
+                this.pos,
                 mesh,
                 this.textures,
                 world,

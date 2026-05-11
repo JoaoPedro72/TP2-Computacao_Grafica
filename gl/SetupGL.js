@@ -1,6 +1,11 @@
+import { Camera } from "../Camera.js";
 import * as twgl from "../twgl.full.module.js";
 
 export class SetupGL {
+    /**
+     * 
+     * @param {Camera} camera 
+     */
     constructor(camera) {
         this.camera = camera;
         this.canvas = document.getElementById("glcanvas");
@@ -175,7 +180,11 @@ export class SetupGL {
         };
     }
 
-    drawMesh(mesh, textures, modelMatrix, programInfo, lightMatrix, isEmissive = false, time) {
+    drawMesh(pos, mesh, textures, modelMatrix, programInfo, lightMatrix, isEmissive = false, time) {
+        if(!this.camera.itsOnCamera(pos) && !mesh.alwaysRender) {
+            return;
+        }
+
         const tex = textures[mesh.material];
 
         const maxLights = 8;

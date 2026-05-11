@@ -4,8 +4,8 @@ const utills = new Utills();
 export class Camera {
     constructor(keys) {
         this.pos = [50, 30, -2];
-        this.yaw = 90; //rotação horizontal
-        this.pitch = -35; //rotação vertical
+        this.yaw = 90; //rotação horizontal em graus
+        this.pitch = -35; //rotação vertical em graus
         this.keys = keys;
         this.speed = 0.2;
         this.sensitivity = 0.2;
@@ -37,6 +37,15 @@ export class Camera {
         if(this.cameraMode === "free") this.moveFree();
         else if(this.cameraMode === "inAxis") this.moveInAxis();
         else if(this.cameraMode === "locked") this.locked(player_pos, player_angle);
+        else if(this.cameraMode === "orbit") this.orbit(player_pos);
+    }
+    orbit(pos){
+        const f = utills.normalize(utills.getFront(this.yaw, this.pitch));
+        const r = utills.normalize(utills.cross(f,[0,1,0]));
+
+        this.pos = pos;
+
+        this.pos = this.pos.map((v,i)=>v-f[i]*this.distancia);
     }
     locked(pos, angle){
         switch (this.lockPos) {
@@ -76,6 +85,7 @@ export class Camera {
         const r = utills.normalize(utills.cross(f,[0,1,0]));
 
         this.pos = this.pos.map((v,i)=>v-f[i]*this.distancia);
+        this.cameraMode = "orbit";
     }
     moveFree(){
         const f = utills.normalize(utills.getFront(this.yaw, this.pitch));
@@ -116,5 +126,39 @@ export class Camera {
     getTarget(){
         const f = this.getFront();
         return this.pos.map((v,i)=>v+f[i]);
+    }
+    itsOnCamera(posObjeto) {
+        // vetor câmera -> objeto
+        let dx = posObjeto[0] - this.pos[0];
+        let dy = posObjeto[1] - this.pos[1];
+        let dz = posObjeto[2] - this.pos[2];
+
+        // normaliza vetor até objeto
+        const len = Math.hypot(dx, dy, dz);
+
+        if (len === 0) return true;
+
+        dx /= len;
+        dy /= len;
+        dz /= len;
+
+        // direção da câmera
+        const yaw = utills.radians(this.yaw);
+        const pitch = utills.radians(this.pitch);
+
+        const forwardX = Math.cos(pitch) * Math.cos(yaw);
+        const forwardY = Math.sin(pitch);
+        const forwardZ = Math.cos(pitch) * Math.sin(yaw);
+
+        // produto escalar
+        const dot =
+            dx * forwardX +
+            dy * forwardY +
+            dz * forwardZ;
+
+        // FOV
+        // cos(90°) = 0
+        // 180° total de visão
+        return dot > 0;
     }
 }

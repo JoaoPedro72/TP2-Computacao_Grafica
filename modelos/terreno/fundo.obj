@@ -1,0 +1,15 @@
+# Made in Blockbench 5.1.4
+mtllib fundo.mtl
+
+o plane
+v 0.5 0 0.5
+v 0.5 0 -0.5
+v -0.5 0 0.5
+v -0.5 0 -0.5
+vt 1 0
+vt 1 1
+vt 0 1
+vt 0 0
+vn 0 1 0
+usemtl m_e0df3685-9c84-7203-b953-1133b30171a7
+f 1/1/1 2/2/1 4/3/1 3/4/1

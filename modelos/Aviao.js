@@ -96,6 +96,14 @@ export class AviaoModelo{
 
         this.root.meshes[0].specularStrength=1;
         this.root.meshes[0].shininess = 64;
+
+        this.root.meshes.forEach(mesh => {
+            mesh.alwaysRender = true;
+        });
+        this.root.children.forEach(child =>
+            child.meshes.forEach(mesh =>
+                mesh.alwaysRender = true
+        ));
     }
 
     setPos(pos){

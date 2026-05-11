@@ -44,11 +44,12 @@ async function main() {
 
         const speed = 0.01;
 
-        const angle = time * speed;
+        const daytime = time * speed;
+        //const daytime = 5;
 
         setupGL.sunDirection = [
-            Math.cos(angle),
-            Math.sin(angle),
+            Math.cos(daytime),
+            Math.sin(daytime),
             0.0
         ];
 
@@ -68,7 +69,7 @@ async function main() {
 
         // 🔥 PASS 2 (render normal)
         setupGL.renderScene((program) => {
-            controle.sol.draw(program, twgl.m4.identity(),lightMatrix,time * speed);
+            controle.sol.draw(program, twgl.m4.identity(),lightMatrix,daytime);
             controle.terreno.draw(program, twgl.m4.identity(),lightMatrix,time);
             controle.root.draw(program, twgl.m4.identity(),lightMatrix,time);
         });
