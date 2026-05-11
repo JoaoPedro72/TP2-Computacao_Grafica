@@ -14,7 +14,7 @@ export class Camera {
         this.lockPos = 5;
         this.cockpitYawOffset = 0;
         this.cockpitPitchOffset = 0;
-        this.fov = 90; // campo de visão em radianos
+        this.fov = 90; // campo de visão em graus
     }
     rodar(e){
         if(this.cameraMode === "locked"){
