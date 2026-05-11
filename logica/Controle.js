@@ -46,7 +46,7 @@ export class Controle {
         
         this.camera.updateCamera([this.player.pos[0],this.player.pos[1],this.player.pos[2]], -this.player.angulo - 90);
 
-        if(this.camera.cameraMode === "locked") this.player.controls = true;
+        if(this.camera.cameraMode === "orbit") this.player.controls = true;
     }
 
     keysCommands(){

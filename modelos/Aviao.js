@@ -104,6 +104,12 @@ export class AviaoModelo{
             child.meshes.forEach(mesh =>
                 mesh.alwaysRender = true
         ));
+        this.faixa2.meshes.forEach(mesh => {
+            mesh.alwaysRender = true;
+        });
+        this.faixa3.meshes.forEach(mesh => {
+            mesh.alwaysRender = true;
+        });
     }
 
     setPos(pos){

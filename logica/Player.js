@@ -32,22 +32,26 @@ export class Player {
         }
         if(this.keys.a) {
             this.angulo += this.velCurva * time;
-            this.anguloFaixa[0] -= 0.1 * time * this.velocidade/2;
+            this.anguloFaixa[0] -= 0.05 * time * this.velCurva/2;
+            if(this.anguloFaixa[0] < -25) this.anguloFaixa[0] = -25;
         }
         if(this.keys.d) {
             this.angulo -= this.velCurva * time;
-            this.anguloFaixa[0] += 0.1 * time * this.velocidade/2;
+            this.anguloFaixa[0] += 0.05 * time * this.velCurva/2;
+            if(this.anguloFaixa[0] > 25) this.anguloFaixa[0] = 25;
         }
         if(this.keys.c) {
             this.controls = false;
         }
         if(this.keys.shift){
             this.pos[1] -= this.velocidade * time * 0.5;
-            this.anguloFaixa[1] -= 0.1 * time * this.velocidade/2;
+            this.anguloFaixa[1] -= 0.1 * time * this.velCurva;
+            if(this.anguloFaixa[1] < -25) this.anguloFaixa[1] = -25;
         }
         if(this.keys[" "]){
             this.pos[1] += this.velocidade * time * 0.5;
-            this.anguloFaixa[1] += 0.1 * time * this.velocidade/2;
+            this.anguloFaixa[1] += 0.1 * time * this.velCurva;
+            if(this.anguloFaixa[1] > 25) this.anguloFaixa[1] = 25;
         }
     }
     move(time){
@@ -56,8 +60,10 @@ export class Player {
     }
     faixaVirar(time){
         this.model.root.rot[2] = -this.anguloFaixa[0];
+
         if(Math.abs(this.angulo) < 90) this.model.root.rot[0] = this.anguloFaixa[1];
         else this.model.root.rot[0] = -this.anguloFaixa[1];
+
         this.model.faixa1.rot[2] = this.anguloFaixa[0];
         this.model.faixa1.rot[1] = Math.sin(time)/8 + this.anguloFaixa[0];
         this.model.faixa2.rot[1] = -Math.sin(time)/4 + this.anguloFaixa[0];

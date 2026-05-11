@@ -61,13 +61,17 @@ class Biomas {
         ];
         this.feature = {
             planicie: [
-                { nome: "casa1/casa.obj",     peso: 10},
-                { nome: "torre/torre.obj",    peso: 3},
-                { nome: "",         peso: 100}
+                { nome: "casa1/casa.obj",     peso: 3},
+                { nome: "torre/torre.obj",    peso: 1},
+                { nome: "",         peso: 240}
             ],
             floresta: [
-                { nome: "arvore/arvore.obj", peso: 5},
+                { nome: "arvore/arvore.obj", peso: 3},
                 { nome: "",         peso: 15}
+            ],
+            deserto: [
+                { nome: "",         peso: 30},
+                { nome: "cacto/cacto.obj",   peso: 1}
             ]
         }
     }
@@ -361,7 +365,7 @@ export class Terreno{
     draw(program, identity, lightMatrix, time){
         this.root.draw(program, identity, lightMatrix, time);
     }
-    addFeature(x, z){
+    async addFeature(x, z){
         let featUrl = this.biomas.getFeatureType(this.pos[x][z][3])
 
         if(featUrl != ""){
@@ -374,7 +378,7 @@ export class Terreno{
             }) 
             let ent = new Entidade([x, 0, z], this, "feature", model);
             ent.angulo = Math.random() * 360 - 180
-            model.loadFromOBJ();
+            await model.loadFromOBJ();
 
             this.entidades.push(ent);
             this.root.add(model);

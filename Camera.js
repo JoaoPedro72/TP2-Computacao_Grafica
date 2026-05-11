@@ -15,6 +15,7 @@ export class Camera {
     }
     rodar(e){
         if(this.cameraMode === "locked"){
+            this.cameraMode = "orbit";
         }else{
             this.yaw += e.movementX * this.sensitivity;
             this.pitch -= e.movementY * this.sensitivity;
@@ -85,7 +86,6 @@ export class Camera {
         const r = utills.normalize(utills.cross(f,[0,1,0]));
 
         this.pos = this.pos.map((v,i)=>v-f[i]*this.distancia);
-        this.cameraMode = "orbit";
     }
     moveFree(){
         const f = utills.normalize(utills.getFront(this.yaw, this.pitch));
