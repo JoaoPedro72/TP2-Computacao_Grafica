@@ -1,7 +1,48 @@
+/**
+ * @typedef {{ x: number, y: number }} Vec2
+ * @typedef {{ x: number, y: number, z: number }} Vec3
+ */
+
 import { generateGrid } from "../PerlinNoise.js";
 import { Modelo } from "../gl/Modelo.js";
+import { SetupGL } from "../gl/SetupGL.js";
+import { Entidade } from "../logica/Entidade.js";
 
 import * as twgl from "../twgl.full.module.js";
+
+const BIOMA_UV = {
+    deserto:   [1,1],
+    praia:     [1,2],
+    floresta:  [1,3],
+    oceano:    [2,1],
+    montanha:  [2,2],
+    planicie:  [2,3],
+    agua:      [3,1],
+    tundra:    [3,2],
+    gelo:      [3,3]
+};
+
+function getUVAtlas(col, row) {
+    const atlasSize = 64;
+    const tileSize = 16;
+    const padding = 1;
+    const stride = tileSize + padding;
+
+    const x = (col - 1) * stride;
+    const y = (row - 1) * stride;
+
+    const u0 = x / atlasSize;
+    const v0 = y / atlasSize;
+    const u1 = (x + tileSize) / atlasSize;
+    const v1 = (y + tileSize) / atlasSize;
+
+    return [
+        [u0, v0],
+        [u1, v0],
+        [u0, v1],
+        [u1, v1]
+    ];
+}
 
 class Biomas {
     constructor(){
@@ -18,6 +59,17 @@ class Biomas {
             { nome: "praia",    temp:[0.0,1.0], umi:[0.0,1.0], altura:[-0.4,1] },
             { nome: "oceano",   temp:[0.0,1.0], umi:[0.0,1.0], altura:[-10.0,-0.4] }
         ];
+        this.feature = {
+            planicie: [
+                { nome: "casa1/casa.obj",     peso: 3},
+                { nome: "torre/torre.obj",    peso: 1},
+                { nome: "",         peso: 50}
+            ],
+            floresta: [
+                { nome: "arvore/arvore.obj", peso: 5},
+                { nome: "",         peso: 15}
+            ]
+        }
     }
 
     inRange(v, r){ return v >= r[0] && v <= r[1]; }
@@ -34,16 +86,41 @@ class Biomas {
         }
         return "planicie";
     }
+    /**
+     * retorna uma string com o nome de uma feature de acordo com o bioma
+     * @param {String} biome 
+     */
+    getFeatureType(biome){
+        let max = 0;
+        if(this.feature[biome] ? 0 : 1) return "";
+        for(let prop of this.feature[biome]){
+            max += prop.peso;
+        }
+        let value = Math.random() * max;
+        for(let prop of this.feature[biome]){
+            if(value < prop.peso) return prop.nome;
+            value -= prop.peso;
+        }
+        console.log("erro gerando feature");
+        return "";
+    }
 }
 
 export class Terreno{
-    constructor(setupGL, tamanhoMapa){
+    /**
+     * 
+     * @param {SetupGL} setupGL 
+     * @param {[]} tamanhoMapa
+     */
+    constructor(setupGL, tamanhoMapa = [100, 100]){
         this.setupGL = setupGL;
         this.tamanhoMapa = tamanhoMapa;
 
         this.sementeElevacao = Math.random()*10000;
         this.sementeTemperatura = Math.random()*10000;
         this.sementeUmidade = Math.random()*10000;
+
+        this.entidades = [];
 
         this.pos = [];
         // [x][z][0] Altura
@@ -265,38 +342,34 @@ export class Terreno{
     draw(program, identity, lightMatrix, time){
         this.root.draw(program, identity, lightMatrix, time);
     }
+    addFeature(x, z){
+        let featUrl = this.biomas.getFeatureType(this.pos[x][z][3])
+
+        if(featUrl != ""){
+            console.log(featUrl);
+            featUrl = "modelos/" + featUrl;
+            let model = new Modelo({
+                pos: [x, 0, z],
+                setupGL: this.setupGL,
+                objUrl: featUrl
+            }) 
+            let ent = new Entidade([x, 0, z], this, "feature", model);
+
+            model.loadFromOBJ();
+
+            this.entidades.push(ent);
+            this.root.add(model);
+        }
+    }
+    async addFeatures(){
+        const x_size = this.tamanhoMapa[0];
+        const z_size = this.tamanhoMapa[1];
+        
+        for(let x = 0; x < x_size; x++){
+            for(let z = 0; z < z_size; z++){
+                await this.addFeature(x,z);
+            }
+        }
+    }
 }
 
-const BIOMA_UV = {
-    deserto:   [1,1],
-    praia:     [1,2],
-    floresta:  [1,3],
-    oceano:    [2,1],
-    montanha:  [2,2],
-    planicie:  [2,3],
-    agua:      [3,1],
-    tundra:    [3,2],
-    gelo:      [3,3]
-};
-
-function getUVAtlas(col, row) {
-    const atlasSize = 64;
-    const tileSize = 16;
-    const padding = 1;
-    const stride = tileSize + padding;
-
-    const x = (col - 1) * stride;
-    const y = (row - 1) * stride;
-
-    const u0 = x / atlasSize;
-    const v0 = y / atlasSize;
-    const u1 = (x + tileSize) / atlasSize;
-    const v1 = (y + tileSize) / atlasSize;
-
-    return [
-        [u0, v0],
-        [u1, v0],
-        [u0, v1],
-        [u1, v1]
-    ];
-}

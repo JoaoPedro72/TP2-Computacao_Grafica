@@ -17,6 +17,9 @@ export class Player {
         this.move(time);
         this.faixaVirar(time);
         if(this.controls)this.imputs(time);
+
+        this.model.root.rot[1] = utills.radians(this.angulo);
+        this.model.setPos(this.pos);
     }
     imputs(time){
         if(this.keys.w && this.velocidade < 10){

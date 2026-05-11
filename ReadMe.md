@@ -18,11 +18,18 @@
     1. Modelos no formato .obj (até 10%)
     1. Fontes de luz pontuais ou spotlight (4%)
 
+## Fazendo
+- Mundo
+    1. Codigo para popular o mapa com construções.
+
 ## Falta fazer
 - MUITO IMPORTANTE
     1. Nome para a pagina/ jogo/ trabalho.
+    1. Renderizar/desenhar apenas o que esta na tela.
 - Câmera
     1. **Terceira câmera (5%)**: posicionada dentro da cabine, possibilitando uma observação panorâmica da cidade, e que pode ser alterada via setinhas do teclado (<kbd>➡️</kbd> e <kbd>⬅️</kbd>), fazendo com que a câmera, sem sair de onde está, altere para onde ela está olhando
+    1. Permitir a camera orbitar livremente o avião.
+    1. zoom.
 - Gráficos
     1. Efeitos de partículas (até 8%)
 - Mundo

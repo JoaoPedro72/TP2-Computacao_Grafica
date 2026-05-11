@@ -68,8 +68,8 @@ async function main() {
 
         // 🔥 PASS 2 (render normal)
         setupGL.renderScene((program) => {
-            controle.terreno.draw(program, twgl.m4.identity(),lightMatrix,time);
             controle.sol.draw(program, twgl.m4.identity(),lightMatrix,time * speed);
+            controle.terreno.draw(program, twgl.m4.identity(),lightMatrix,time);
             controle.root.draw(program, twgl.m4.identity(),lightMatrix,time);
         });
 

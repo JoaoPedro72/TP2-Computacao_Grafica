@@ -6,6 +6,7 @@ import { SolModelo } from "../modelos/Sol.js";
 import { AviaoModelo } from "../modelos/Aviao.js";
 import { Terreno } from "../modelos/Terreno.js";
 import { Player } from "./Player.js";
+import { Entidade } from "./Entidade.js";
 
 const utills = new Utills();
 
@@ -17,6 +18,7 @@ export class Controle {
         this.cameraWait = false;
         this.cameraWait2 = false;
         this.lightingSwitch = false;
+        this.hasFeatures = false;
         
         this.root = new Modelo({
             setupGL: setupGL
@@ -26,35 +28,38 @@ export class Controle {
         this.aviao = new AviaoModelo(setupGL);
         this.terreno = new Terreno(setupGL, [100, 100]);
 
-        this.torre = new Modelo({
-            pos: [10,10,10],
-            setupGL: this.setupGL,
-            objUrl: "modelos/torre/torre.obj"
-        })
-        this.torre.loadFromOBJ();
-
         this.player = new Player([this.terreno.tamanhoMapa[0]/2,20,this.terreno.tamanhoMapa[1]/2],keys,this.aviao);
 
         this.root.add(this.aviao);
-        this.root.add(this.torre);
 
         this.aviao.setPos(this.player.pos);
     }
     tick(time){
+        this.keysCommands();
+
+        
+        this.player.tick(time);
+
+        for(let entidade of this.terreno.entidades){
+            entidade.tick(time);
+        }
+        
+        this.camera.updateCamera([this.player.pos[0],this.player.pos[1],this.player.pos[2]], -this.player.angulo - 90);
+
+        if(this.camera.cameraMode === "locked") this.player.controls = true;
+    }
+
+    keysCommands(){
         if(this.keys.l && !this.lightingSwitch){
             this.lightingSwitch = true;
             this.setupGL.lightingEnabled = !this.setupGL.lightingEnabled;
         }
         if(!this.keys.l) this.lightingSwitch = false;
-        this.player.tick(time);
-        this.aviao.setPos(this.player.pos);
-        this.aviao.root.rot[1] = utills.radians(this.player.angulo);
-        
-        this.camera.updateCamera([this.player.pos[0],this.player.pos[1],this.player.pos[2]], -this.player.angulo - 90);
 
-        if(this.camera.cameraMode === "locked") this.player.controls = true;
-        //console.log(this.camera.pos);
-        
-        //console.log(this.terreno?.pos[this.player.pos[0] | 0][Math.max(0,this.player.pos[2] | 0)][2]);
+        if(this.keys.k && !this.hasFeatures){
+            console.log("gerando features.");
+            this.hasFeatures = true;
+            this.terreno.addFeatures();
+        }
     }
 }

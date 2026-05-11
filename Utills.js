@@ -121,4 +121,17 @@ export class Utills {
         let diff = b - a;
         return Math.atan2(Math.sin(diff), Math.cos(diff));
     }
+
+    /** 
+     * Retorna o primeiro valor aproximado de zero pelo segundo
+     * quando for ocorrer troca de sinal ele retorna zero
+     */
+    aproxZero(valor, aprox){
+        let result = 0;
+
+        if(valor > 0) result = Math.max(0,valor - aprox);
+        else result = Math.min(0,valor + aprox);
+
+        return result;
+    }
 }

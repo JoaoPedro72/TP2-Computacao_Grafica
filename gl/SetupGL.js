@@ -108,7 +108,7 @@ export class SetupGL {
             this.sunDirection[2] * 100
         ];
 
-        const target = [50,0,50];
+        const target = this.camera.pos;
 
         const lightView = twgl.m4.lookAt(lightPos, target, [50,1,50]);
         const lightProj = twgl.m4.ortho(-50,50,-50,50,0.1,200);
