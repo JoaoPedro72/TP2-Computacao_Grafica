@@ -7,6 +7,7 @@
 
 ## Feito
 - Câmera
+    1. Terceira câmera (5%): controle nas setas ou mouse (Tecla 7).
 - Gráficos
     1. Phong esta feito, falta dar valores aos materiais
     1. Dia/noite (até 10%)
@@ -32,7 +33,6 @@
     1. Nome para a pagina/ jogo/ trabalho.
     1. Otimizar mapa com objetos
 - Câmera
-    1. **Terceira câmera (5%)**: posicionada dentro da cabine, possibilitando uma observação panorâmica da cidade, e que pode ser alterada via setinhas do teclado (<kbd>➡️</kbd> e <kbd>⬅️</kbd>), fazendo com que a câmera, sem sair de onde está, altere para onde ela está olhando
     1. zoom.
 - Gráficos
     1. Efeitos de partículas (até 8%)

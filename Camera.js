@@ -12,10 +12,17 @@ export class Camera {
         this.cameraMode = "locked";
         this.distancia = 20;
         this.lockPos = 5;
+        this.cockpitYawOffset = 0;
+        this.cockpitPitchOffset = 0;
     }
     rodar(e){
         if(this.cameraMode === "locked"){
-        }else{
+        } 
+        else if(this.cameraMode === "cockpit"){
+            this.cockpitYawOffset += e.movementX * this.sensitivity;
+            this.cockpitPitchOffset -= e.movementY * this.sensitivity;
+        } 
+        else{
             this.yaw += e.movementX * this.sensitivity;
             this.pitch -= e.movementY * this.sensitivity;
         }
@@ -29,6 +36,7 @@ export class Camera {
         if(this.keys[4]) {this.lockPos = 3; this.cameraMode = "locked";}
         if(this.keys[5]) {this.lockPos = 4; this.cameraMode = "locked";}
         if(this.keys[6]) {this.lockPos = 5; this.cameraMode = "locked";}
+        if(this.keys[7]) {this.cameraMode = "cockpit";}
         if(this.keys.c) {this.cameraMode = "inAxis";}
     }
     updateCamera(player_pos, player_angle){
@@ -38,6 +46,7 @@ export class Camera {
         else if(this.cameraMode === "inAxis") this.moveInAxis();
         else if(this.cameraMode === "locked") this.locked(player_pos, player_angle);
         else if(this.cameraMode === "orbit") this.orbit(player_pos);
+        else if(this.cameraMode === "cockpit") this.cockpit(player_pos, player_angle);
     }
     orbit(pos){
         const f = utills.normalize(utills.getFront(this.yaw, this.pitch));
@@ -116,6 +125,30 @@ export class Camera {
 
         if(this.keys[" "]) this.pos[1] += this.speed;
         if(this.keys["shift"]) this.pos[1] -= this.speed;
+    }
+
+    cockpit(pos, angle){
+
+        if(this.keys["arrowleft"]) this.cockpitYawOffset -= 1;
+        if(this.keys["arrowright"]) this.cockpitYawOffset += 1;
+        if(this.keys["arrowup"]) this.cockpitPitchOffset += 1;
+        if(this.keys["arrowdown"]) this.cockpitPitchOffset -= 1;
+
+        this.cockpitYawOffset = Math.max(-90,Math.min(90, this.cockpitYawOffset));
+        this.cockpitPitchOffset = Math.max(-15,Math.min(15, this.cockpitPitchOffset));
+
+        const frontOffset = -0.1;
+        const heightOffset = 0.8;
+        const front = utills.normalize(utills.getFront(angle, 0));
+
+        this.pos = [
+            pos[0] + front[0] * frontOffset,
+            pos[1] + heightOffset,
+            pos[2] + front[2] * frontOffset
+        ];
+
+        this.yaw = angle + this.cockpitYawOffset;
+        this.pitch = -5 + this.cockpitPitchOffset;
     }
 
     getFront(){
