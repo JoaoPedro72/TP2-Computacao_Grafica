@@ -24,6 +24,8 @@ document.addEventListener("mousemove", (e) => {
     camera.rodar(e);
 });
 
+setupGL.canvas.addEventListener("wheel",(e) => {camera.zoom(e);},{ passive: false });
+
 async function main() {
 
     await setupGL.createProgram();

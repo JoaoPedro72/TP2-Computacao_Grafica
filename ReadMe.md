@@ -8,6 +8,7 @@
 ## Feito
 - Câmera
     1. Terceira câmera (5%): controle nas setas ou mouse (Tecla 7).
+    1. Zoom com FOV.
 - Gráficos
     1. Phong esta feito, falta dar valores aos materiais
     1. Dia/noite (até 10%)
@@ -32,8 +33,6 @@
 - MUITO IMPORTANTE
     1. Nome para a pagina/ jogo/ trabalho.
     1. Otimizar mapa com objetos
-- Câmera
-    1. zoom.
 - Gráficos
     1. Efeitos de partículas (até 8%)
     1. Corrigir agua branca a noite, denovo

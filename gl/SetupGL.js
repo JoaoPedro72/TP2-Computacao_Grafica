@@ -93,7 +93,7 @@ export class SetupGL {
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
         this.projection = twgl.m4.perspective(
-            Math.PI / 3,
+            this.camera.fov * (Math.PI/ 180),
             this.canvas.width / this.canvas.height,
             0.1,
             100

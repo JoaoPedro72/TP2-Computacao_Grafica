@@ -14,6 +14,7 @@ export class Camera {
         this.lockPos = 5;
         this.cockpitYawOffset = 0;
         this.cockpitPitchOffset = 0;
+        this.fov = 90; // campo de visão em radianos
     }
     rodar(e){
         if(this.cameraMode === "locked"){
@@ -29,6 +30,15 @@ export class Camera {
         // Limita o pitch para evitar flip
         this.pitch = Math.max(-89, Math.min(89, this.pitch));
     }
+    zoom(e){
+        if(!e.ctrlKey) return;
+
+        e.preventDefault();
+
+        this.fov += e.deltaY * 0.05;
+        this.fov = Math.max(20,Math.min(100, this.fov));
+    }
+    
     updateLockPos(){
         if(this.keys[1]) {this.lockPos = 0; this.cameraMode = "locked";}
         if(this.keys[2]) {this.lockPos = 1; this.cameraMode = "locked";}
