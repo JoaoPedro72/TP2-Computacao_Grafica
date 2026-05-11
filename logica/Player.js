@@ -14,6 +14,9 @@ export class Player {
         this.controls = true;
     }
     tick(time){
+        if(this.angulo > 180) this.angulo -= 360;
+        if(this.angulo < -180) this.angulo += 360;
+        
         this.move(time);
         this.faixaVirar(time);
         if(this.controls)this.imputs(time);
@@ -43,15 +46,15 @@ export class Player {
         if(this.keys.c) {
             this.controls = false;
         }
-        if(this.keys.shift){
+        if(this.keys.shift && this.pos[1] > 15){
             this.pos[1] -= this.velocidade * time * 0.5;
-            this.anguloFaixa[1] -= 0.1 * time * this.velCurva;
-            if(this.anguloFaixa[1] < -25) this.anguloFaixa[1] = -25;
+            this.anguloFaixa[1] -= 0.05 * time * this.velCurva;
+            if(this.anguloFaixa[1] < -10) this.anguloFaixa[1] = -10;
         }
-        if(this.keys[" "]){
+        if(this.keys[" "] && this.pos[1] < 30){
             this.pos[1] += this.velocidade * time * 0.5;
-            this.anguloFaixa[1] += 0.1 * time * this.velCurva;
-            if(this.anguloFaixa[1] > 25) this.anguloFaixa[1] = 25;
+            this.anguloFaixa[1] += 0.05 * time * this.velCurva;
+            if(this.anguloFaixa[1] > 10) this.anguloFaixa[1] = 10;
         }
     }
     move(time){

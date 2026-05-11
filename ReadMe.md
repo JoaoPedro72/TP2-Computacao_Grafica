@@ -23,6 +23,8 @@
     1. Rotação aleatoria para as construções.
     1. Codigo para popular o mapa com construções.
     1. objetos que formarão o cenário (min 3)
+    1. Moitas de grama (até 6%)
+        Vento (+6%)
 
 ## Fazendo
 - Mundo
@@ -48,8 +50,8 @@
     1. Skybox, skyphere ou skydome (até 10%)
     1. Objetos animados (até 10%)
     1. Mais tipos de objetos (até 8%)
-    1. Moitas de grama (até 6%)
-        Vento (+6%)
+    1. deixar grama mais bonita, ta bem + -
+    
 - Gráficos
     1. Neblina (fog) (4%)
     1. Efeitos de pós-processamento (5%)

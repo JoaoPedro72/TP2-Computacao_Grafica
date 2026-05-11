@@ -65,14 +65,14 @@ class Biomas {
                 { nome: "torre/torre.obj",    peso: 1},
                 { nome: "",         peso: 240}
             ],
-            floresta: [
-                { nome: "arvore/arvore.obj", peso: 3},
-                { nome: "",         peso: 15}
-            ],
             deserto: [
                 { nome: "",         peso: 30},
                 { nome: "cacto/cacto.obj",   peso: 1}
-            ]
+            ]//,
+            //floresta: [
+            //    { nome: "arvore/arvore.obj", peso: 3},
+            //    { nome: "",         peso: 15}
+            //]
         }
     }
 

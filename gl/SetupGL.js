@@ -185,9 +185,7 @@ export class SetupGL {
         if(!this.camera.itsOnCamera(pos) && !mesh.alwaysRender) {
             return;
         }
-        if(pos[0] == 100) console.log(modelMatrix[13])
         if(modelMatrix[13] < -20) {
-            console.log(pos)
             return
         }
 
@@ -238,6 +236,8 @@ export class SetupGL {
 
             u_time: performance.now() * 0.001,
             u_isWater: mesh.isWater ? 1 : 0,
+            u_isGrass: mesh.isGrass ? 1 : 0,
+            u_isInstanced:            0,
 
             u_cameraPos: this.camera.pos,
 

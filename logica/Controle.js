@@ -8,9 +8,20 @@ import { Terreno } from "../modelos/Terreno.js";
 import { Player } from "./Player.js";
 import { Entidade } from "./Entidade.js";
 
+import { Grama } from "../modelos/Grama.js";
+import { ArvoreInstanced } from "../modelos/ArvoreInstanced.js";
+import { SetupGL } from "../gl/SetupGL.js";
+import { Camera } from "../Camera.js";
+
 const utills = new Utills();
 
 export class Controle {
+    /**
+     * 
+     * @param {SetupGL} setupGL 
+     * @param {*} keys 
+     * @param {Camera} camera 
+     */
     constructor(setupGL, keys, camera){
         this.setupGL = setupGL;
         this.keys = keys;
@@ -33,6 +44,13 @@ export class Controle {
         this.root.add(this.aviao);
 
         this.aviao.setPos(this.player.pos);
+        
+        this.grama = new Grama(this.setupGL, this.terreno.pos, this.terreno.tamanhoMapa);
+
+        this.arvores = new ArvoreInstanced(this.setupGL, this.terreno.pos, this.terreno.tamanhoMapa);
+
+        this.root.add(this.grama)
+        this.root.add(this.arvores)
     }
     tick(time){
         this.keysCommands();
@@ -49,7 +67,7 @@ export class Controle {
         if(this.camera.cameraMode === "orbit") this.player.controls = true;
     }
 
-    keysCommands(){
+    async keysCommands(){
         if(this.keys.l && !this.lightingSwitch){
             this.lightingSwitch = true;
             this.setupGL.lightingEnabled = !this.setupGL.lightingEnabled;
@@ -60,6 +78,7 @@ export class Controle {
             console.log("gerando features.");
             this.hasFeatures = true;
             this.terreno.addFeatures();
+            await this.arvores.build();
         }
     }
 }

@@ -5,6 +5,9 @@ attribute vec3 a_position;
 attribute vec3 a_normal;
 attribute vec2 a_texcoord;
 
+attribute vec3 a_instancePos; // posição da instância
+attribute float a_instanceRot; // rotação Y da instância
+
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
@@ -12,6 +15,7 @@ uniform mat4 u_lightMatrix;
 
 uniform float u_time;
 uniform int u_isWater;
+uniform int u_isGrass;
 
 varying vec3 v_normal;
 varying vec2 v_uv;
@@ -43,9 +47,14 @@ void main() {
 
     vec3 pos = a_position;   
 
-    //
-    // 🌊 ONDA REAL (VERTEX)
-    //
+
+    // Instancing para a grama e arvores
+    float s = sin(a_instanceRot);
+    float c = cos(a_instanceRot);
+    pos.xz = mat2(c, s, -s, c) * pos.xz;
+    
+    pos += a_instancePos;
+    // ONDA REAL (VERTEX)
     float wave = 0.0;
 
     if(u_isWater == 1){
@@ -67,11 +76,31 @@ void main() {
 
     v_wave = wave;
 
+    if (u_isGrass == 1) {
+        // 🌾 VENTO (só afeta grama — vértices altos balançam mais)
+        float windStrength = 0.2;           // intensidade — aumente para vento mais forte
+        float windSpeed    = 2.0;            // velocidade
+        float windFreq     = 0.5;            // frequência espacial (ondas maiores ou menores)
+
+        // pos.y aqui já é a altura LOCAL do vértice (0 = base, h = topo)
+        // a_instancePos.y é a altura do terreno — não conta pro balanço
+        float heightFactor = clamp(pos.y, 0.0, 1.0); // base = 0, topo = 1
+
+        // Usar a posição da instância como fase para cada tufo balançar diferente
+        float phase = a_instancePos.x * 0.3 + a_instancePos.z * 0.7;
+
+        float windX = sin(u_time * windSpeed + phase * windFreq) * windStrength * heightFactor;
+        float windZ = cos(u_time * windSpeed * 0.7 + phase * windFreq) * windStrength * 0.5 * heightFactor;
+
+        pos.x += windX;
+        pos.z += windZ;
+    }
+
     vec4 worldPos = u_model * vec4(pos, 1.0);
 
     v_worldPos = worldPos.xyz;
 
-    // ⚠️ normal simples (ok para água leve)
+    // normal simples (ok para água leve)
     v_normal = mat3(u_model) * a_normal;
 
     v_uv = a_texcoord;
