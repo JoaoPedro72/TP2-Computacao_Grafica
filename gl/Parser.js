@@ -1,7 +1,7 @@
 export class Parser{
     constructor(){}
 
-    static cache = {}; // 🔥 global
+    static cache = {}; // global
 
     /**
      * Carrega OBJ e MTL associados
@@ -10,7 +10,7 @@ export class Parser{
      */
     async loadOBJWithMTL(url){
 
-        // 🔥 já carregado?
+        // já carregado?
         if(Parser.cache[url]){
             return Parser.cache[url];
         }
@@ -35,7 +35,7 @@ export class Parser{
 
         const result = {parts, materials};
 
-        // 🔥 salva no cache
+        // salva no cache
         Parser.cache[url] = result;
 
         return result;

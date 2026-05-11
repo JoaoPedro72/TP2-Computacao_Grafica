@@ -25,6 +25,11 @@ export class SolModelo{
         await this.sol.loadFromOBJ();
 
         this.root.add(this.sol);
+
+        this.root.children.forEach(child =>
+            child.meshes.forEach(mesh =>
+                mesh.alwaysRender = true
+        ));
     }
 
     setPos(pos){

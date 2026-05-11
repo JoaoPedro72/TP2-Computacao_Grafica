@@ -113,10 +113,11 @@ export class SetupGL {
             this.sunDirection[2] * 100
         ];
 
-        const target = this.camera.pos;
+        const target = [this.camera.pos[0], 0, this.camera.pos[2] ];
+        //const target = [50, 0, 50]
 
-        const lightView = twgl.m4.lookAt(lightPos, target, [50,1,50]);
-        const lightProj = twgl.m4.ortho(-50,50,-50,50,0.1,200);
+        const lightView = twgl.m4.lookAt(lightPos, target, [0,1,0]);
+        const lightProj = twgl.m4.ortho(-75,75,-75,75,0.1,300);
 
         this.lightMatrix = twgl.m4.multiply(
             lightProj,
@@ -183,6 +184,11 @@ export class SetupGL {
     drawMesh(pos, mesh, textures, modelMatrix, programInfo, lightMatrix, isEmissive = false, time) {
         if(!this.camera.itsOnCamera(pos) && !mesh.alwaysRender) {
             return;
+        }
+        if(pos[0] == 100) console.log(modelMatrix[13])
+        if(modelMatrix[13] < -20) {
+            console.log(pos)
+            return
         }
 
         const tex = textures[mesh.material];
