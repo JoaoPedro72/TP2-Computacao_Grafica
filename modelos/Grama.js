@@ -9,28 +9,29 @@ export class Grama {
         this.tamanho = tamanho;
         this.texture = setupGL.loadTexture("modelos/grama/grama.png");
 
-        // Raio de renderização em unidades de mundo
         this.raioRender = 25;
+        this.tufosPorCelula = 4;
+        this._chunkSize = 16;
 
-        // Quantos tufos por célula de floresta
-        this.tufosPorCelula = 8;
+        this._todasInstancias = [];
+        this._chunks = {};
 
-        // Todas as instâncias do mundo (geradas uma vez)
-        this._todasInstancias = []; // [{x, y, z, rot}, ...]
-
-        this._posBuf    = null;
-        this._uvBuf     = null;
+        this._posBuf     = null;
+        this._uvBuf      = null;
         this._instPosBuf = null;
         this._instRotBuf = null;
         this._vertCount  = 0;
 
-        // Buffer dinâmico (re-uploadado a cada frame com instâncias visíveis)
         this._instPosDyn = null;
         this._instRotDyn = null;
         this.instanceCount = 0;
 
+        // Cache de locations por programa (depth e main têm locations diferentes)
+        this._locationCache = {};
+
         this._buildGeometry();
         this._buildAllInstances();
+        this._buildChunks();
         this._createDynamicBuffers();
     }
 
@@ -40,7 +41,6 @@ export class Grama {
         const h = 1.3 * scale;
         const w = 0.02 * scale;
 
-        // Cruz de dois billboards
         const positions = new Float32Array([
             // Billboard 1
             -w, 0, 0,   w, 0, 0,   w, h, 0,
@@ -97,47 +97,64 @@ export class Grama {
         }
     }
 
+    _buildChunks() {
+        const cs = this._chunkSize;
+        for (const inst of this._todasInstancias) {
+            const cx = Math.floor(inst.x / cs);
+            const cz = Math.floor(inst.z / cs);
+            const key = `${cx},${cz}`;
+            if (!this._chunks[key]) this._chunks[key] = [];
+            this._chunks[key].push(inst);
+        }
+    }
+
     _createDynamicBuffers() {
         const gl = this.gl;
-        // Aloca no máximo todas as instâncias (pior caso = tudo visível)
-        const maxInstancias = this._todasInstancias.length;
+        const max = this._todasInstancias.length;
 
-        this._instPosDyn = new Float32Array(maxInstancias * 3);
-        this._instRotDyn = new Float32Array(maxInstancias);
+        this._instPosDyn = new Float32Array(max * 3);
+        this._instRotDyn = new Float32Array(max);
 
         this._instPosBuf = gl.createBuffer();
-        this._instRotBuf = gl.createBuffer();
-
-        // Pré-aloca espaço na GPU com DYNAMIC_DRAW
         gl.bindBuffer(gl.ARRAY_BUFFER, this._instPosBuf);
         gl.bufferData(gl.ARRAY_BUFFER, this._instPosDyn, gl.DYNAMIC_DRAW);
 
+        this._instRotBuf = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this._instRotBuf);
         gl.bufferData(gl.ARRAY_BUFFER, this._instRotDyn, gl.DYNAMIC_DRAW);
     }
 
     _updateVisibleInstances(camPos) {
         const raio2 = this.raioRender * this.raioRender;
+        const cs = this._chunkSize;
         let count = 0;
 
-        for (const inst of this._todasInstancias) {
-            const dx = inst.x - camPos[0];
-            const dz = inst.z - camPos[2];
+        const camCX = Math.floor(camPos[0] / cs);
+        const camCZ = Math.floor(camPos[2] / cs);
+        const raioChunks = Math.ceil(this.raioRender / cs) + 1;
 
-            if (dx * dx + dz * dz > raio2) continue;
+        for (let cx = camCX - raioChunks; cx <= camCX + raioChunks; cx++) {
+            for (let cz = camCZ - raioChunks; cz <= camCZ + raioChunks; cz++) {
+                const chunk = this._chunks[`${cx},${cz}`];
+                if (!chunk) continue;
 
-            this._instPosDyn[count * 3 + 0] = inst.x;
-            this._instPosDyn[count * 3 + 1] = inst.y;
-            this._instPosDyn[count * 3 + 2] = inst.z;
-            this._instRotDyn[count] = inst.rot;
-            count++;
+                for (const inst of chunk) {
+                    const dx = inst.x - camPos[0];
+                    const dz = inst.z - camPos[2];
+                    if (dx*dx + dz*dz > raio2) continue;
+
+                    this._instPosDyn[count*3]   = inst.x;
+                    this._instPosDyn[count*3+1] = inst.y;
+                    this._instPosDyn[count*3+2] = inst.z;
+                    this._instRotDyn[count]     = inst.rot;
+                    count++;
+                }
+            }
         }
 
         this.instanceCount = count;
 
         const gl = this.gl;
-
-        // Re-upload apenas a parte usada (subData é mais rápido que bufferData)
         gl.bindBuffer(gl.ARRAY_BUFFER, this._instPosBuf);
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, this._instPosDyn.subarray(0, count * 3));
 
@@ -145,10 +162,23 @@ export class Grama {
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, this._instRotDyn.subarray(0, count));
     }
 
+    _getLocations(programInfo) {
+        const progId = programInfo.program;
+        if (!this._locationCache[progId]) {
+            const gl = this.gl;
+            this._locationCache[progId] = {
+                aPos:     gl.getAttribLocation(progId, "a_position"),
+                aUV:      gl.getAttribLocation(progId, "a_texcoord"),
+                aInstPos: gl.getAttribLocation(progId, "a_instancePos"),
+                aInstRot: gl.getAttribLocation(progId, "a_instanceRot"),
+            };
+        }
+        return this._locationCache[progId];
+    }
+
     draw(programInfo, parentMatrix, lightMatrix, time) {
         if (this._todasInstancias.length === 0) return;
 
-        // Atualiza quais instâncias estão dentro do raio
         this._updateVisibleInstances(this.setupGL.camera.pos);
 
         if (this.instanceCount === 0) return;
@@ -156,30 +186,37 @@ export class Grama {
         const gl = this.gl;
         const s = this.setupGL;
 
+        const { aPos, aUV, aInstPos, aInstRot } = this._getLocations(programInfo);
+
         gl.useProgram(programInfo.program);
 
-        const aPos     = gl.getAttribLocation(programInfo.program, "a_position");
-        const aUV      = gl.getAttribLocation(programInfo.program, "a_texcoord");
-        const aInstPos = gl.getAttribLocation(programInfo.program, "a_instancePos");
-        const aInstRot = gl.getAttribLocation(programInfo.program, "a_instanceRot");
+        // Geometria base
+        if (aPos >= 0) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._posBuf);
+            gl.enableVertexAttribArray(aPos);
+            gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 0, 0);
+        }
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._posBuf);
-        gl.enableVertexAttribArray(aPos);
-        gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 0, 0);
+        if (aUV >= 0) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._uvBuf);
+            gl.enableVertexAttribArray(aUV);
+            gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 0, 0);
+        }
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._uvBuf);
-        gl.enableVertexAttribArray(aUV);
-        gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 0, 0);
+        // Buffers de instância
+        if (aInstPos >= 0) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._instPosBuf);
+            gl.enableVertexAttribArray(aInstPos);
+            gl.vertexAttribPointer(aInstPos, 3, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribDivisor(aInstPos, 1);
+        }
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._instPosBuf);
-        gl.enableVertexAttribArray(aInstPos);
-        gl.vertexAttribPointer(aInstPos, 3, gl.FLOAT, false, 0, 0);
-        gl.vertexAttribDivisor(aInstPos, 1);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._instRotBuf);
-        gl.enableVertexAttribArray(aInstRot);
-        gl.vertexAttribPointer(aInstRot, 1, gl.FLOAT, false, 0, 0);
-        gl.vertexAttribDivisor(aInstRot, 1);
+        if (aInstRot >= 0) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._instRotBuf);
+            gl.enableVertexAttribArray(aInstRot);
+            gl.vertexAttribPointer(aInstRot, 1, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribDivisor(aInstRot, 1);
+        }
 
         twgl.setUniforms(programInfo, {
             u_projection:       s.projection,
@@ -191,6 +228,7 @@ export class Grama {
             u_useTexture:       1,
             u_isWater:          0,
             u_isGrass:          1,
+            u_isInstanced:      1,
             u_lighting:         s.lightingEnabled ? 1 : 0,
             u_sunDirection:     s.sunDirection,
             u_sunStrength:      s.sunStrength,
@@ -203,15 +241,18 @@ export class Grama {
             u_specularStrength: 0.0,
             u_shininess:        4.0,
             u_time:             time,
-            u_isInstanced:      0
         });
 
         gl.drawArraysInstanced(gl.TRIANGLES, 0, this._vertCount, this.instanceCount);
 
         // Limpa estado para não contaminar draws seguintes
-        gl.vertexAttribDivisor(aInstPos, 0);
-        gl.disableVertexAttribArray(aInstPos);
-        gl.vertexAttribDivisor(aInstRot, 0);
-        gl.disableVertexAttribArray(aInstRot);
+        if (aInstPos >= 0) {
+            gl.vertexAttribDivisor(aInstPos, 0);
+            gl.disableVertexAttribArray(aInstPos);
+        }
+        if (aInstRot >= 0) {
+            gl.vertexAttribDivisor(aInstRot, 0);
+            gl.disableVertexAttribArray(aInstRot);
+        }
     }
 }

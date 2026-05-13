@@ -74,8 +74,7 @@ export class Controle {
         }
         if(!this.keys.l) this.lightingSwitch = false;
 
-        if(this.keys.k && !this.hasFeatures){
-            console.log("gerando features.");
+        if(!this.hasFeatures){
             this.hasFeatures = true;
             this.terreno.addFeatures();
             await this.arvores.build();

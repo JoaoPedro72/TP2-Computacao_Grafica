@@ -27,20 +27,18 @@ export class Player {
     imputs(time){
         if(this.keys.w && this.velocidade < 10){
             this.velocidade += time;
-            this.velCurva = (10 - this.velocidade)*2
         }
         if(this.keys.s && this.velocidade > 1){
             this.velocidade -= time;
-            this.velCurva = (10 - this.velocidade*0.5)*2
         }
         if(this.keys.a) {
             this.angulo += this.velCurva * time;
-            this.anguloFaixa[0] -= 0.05 * time * this.velCurva/2;
+            this.anguloFaixa[0] -= 0.05 * time * this.velocidade/2;
             if(this.anguloFaixa[0] < -25) this.anguloFaixa[0] = -25;
         }
         if(this.keys.d) {
             this.angulo -= this.velCurva * time;
-            this.anguloFaixa[0] += 0.05 * time * this.velCurva/2;
+            this.anguloFaixa[0] += 0.05 * time * this.velocidade/2;
             if(this.anguloFaixa[0] > 25) this.anguloFaixa[0] = 25;
         }
         if(this.keys.c) {
@@ -48,12 +46,12 @@ export class Player {
         }
         if(this.keys.shift && this.pos[1] > 15){
             this.pos[1] -= this.velocidade * time * 0.5;
-            this.anguloFaixa[1] -= 0.05 * time * this.velCurva;
+            this.anguloFaixa[1] -= 0.05 * time * this.velocidade;
             if(this.anguloFaixa[1] < -10) this.anguloFaixa[1] = -10;
         }
         if(this.keys[" "] && this.pos[1] < 30){
             this.pos[1] += this.velocidade * time * 0.5;
-            this.anguloFaixa[1] += 0.05 * time * this.velCurva;
+            this.anguloFaixa[1] += 0.05 * time * this.velocidade;
             if(this.anguloFaixa[1] > 10) this.anguloFaixa[1] = 10;
         }
     }

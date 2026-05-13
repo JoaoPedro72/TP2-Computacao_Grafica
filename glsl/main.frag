@@ -50,7 +50,7 @@ float getShadow() {
     float closest = texture2D(u_shadowMap, proj.xy).r;
     float current = proj.z;
 
-    float bias = 0.01;
+    float bias = 0.005;
 
     return current - bias > closest ? 0.3 : 1.0;
 }

@@ -1,5 +1,8 @@
 import { Camera } from "../Camera.js";
 import * as twgl from "../twgl.full.module.js";
+import { Utills } from "../Utills.js";
+
+const utills = new Utills();
 
 export class SetupGL {
     /**
@@ -26,12 +29,15 @@ export class SetupGL {
         this.pointStrength = [];
         this.lights = 0;
 
+        this._lightsBuffer    = new Float32Array(24); // 8 luzes * 3
+        this._strengthsBuffer = new Float32Array(8);
+
         // 💾 caches (se ainda não tiver)
         this.modelCache = {};
         this.textureCache = {};
 
         // 🟣 shadow map
-        this.shadowSize = 1024;
+        this.shadowSize = 2048;
 
         this.lightingEnabled = true;
 
@@ -110,10 +116,10 @@ export class SetupGL {
         const lightPos = [
             this.sunDirection[0] * 100,
             this.sunDirection[1] * 100,
-            this.sunDirection[2] * 100
+            this.sunDirection[2] * 100 + + this.camera.pos[2]
         ];
 
-        const target = [this.camera.pos[0], 0, this.camera.pos[2] ];
+        const target = [this.camera.pos[0], 0, this.camera.pos[2]];
         //const target = [50, 0, 50]
 
         const lightView = twgl.m4.lookAt(lightPos, target, [0,1,0]);
@@ -186,25 +192,29 @@ export class SetupGL {
             return;
         }
         if(modelMatrix[13] < -20) {
-            return
+            return;
+        }
+        if(mesh.hasLight && this.camera.itsOnCamera(pos)){
+            this.pointLights[this.lights] = [];
+            this.pointLights[this.lights][0] = mesh.lightPos[0] + pos[0];
+            this.pointLights[this.lights][1] = mesh.lightPos[1] + pos[1];
+            this.pointLights[this.lights][2] = mesh.lightPos[2] + pos[2];
+            this.pointStrength[this.lights] = mesh.lightStrengt;
+            this.lights ++;
+            if(this.lights == 8) this.lights = 0;
         }
 
         const tex = textures[mesh.material];
 
         const maxLights = 8;
 
-        // 🔥 garantir tamanho fixo
-        const lights = [];
-        const strengths = [];
-
-        for (let i = 0; i < maxLights; i++) {
-            if (i < this.pointLights.length) {
-                lights.push(...this.pointLights[i]);
-                strengths.push(this.pointStrength[i]);
-            } else {
-                lights.push(0,0,0);
-                strengths.push(0);
-            }
+        this._lightsBuffer.fill(0);
+        this._strengthsBuffer.fill(0);
+        for (let i = 0; i < Math.min(this.pointLights.length, maxLights); i++) {
+            this._lightsBuffer[i*3]   = this.pointLights[i][0];
+            this._lightsBuffer[i*3+1] = this.pointLights[i][1];
+            this._lightsBuffer[i*3+2] = this.pointLights[i][2];
+            this._strengthsBuffer[i]  = this.pointStrength[i];
         }
 
         const uniforms = {
@@ -226,8 +236,8 @@ export class SetupGL {
             u_isEmissive: isEmissive ? 1 : 0,
 
             // 🔥 tochas
-            u_pointLights: new Float32Array(lights),
-            u_pointStrength: new Float32Array(strengths),
+            u_pointLights: this._lightsBuffer,
+            u_pointStrength: this._strengthsBuffer,
             u_numPointLights: this.pointLights.length,
 
             // 🎨 textura

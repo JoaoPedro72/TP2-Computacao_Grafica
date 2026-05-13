@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>OBJ Viewer</title>
-  <style>
-    body { margin: 0; }
-    canvas { width: 100vw; height: 100vh; display: block; }
-  </style>
+    <meta charset="UTF-8">
+    <title>OBJ Viewer</title>
+    <style>
+        body { margin: 0; }
+        canvas { width: 100vw; height: 100vh; display: block; }
+    </style>
+    <link rel="stylesheet" href="tela.css">
 </head>
 <body>
-  <canvas id="glcanvas"></canvas>
-  <script  type="module" src="main.js"></script>
+    <div id="game">
+        <canvas id="glcanvas"></canvas>
+        <script  type="module" src="main.js"></script>
+
+        <div id="log"></div>
+    </div>
 </body>
 </html>

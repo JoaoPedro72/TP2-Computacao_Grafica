@@ -19,7 +19,7 @@ const BIOMA_UV = {
     planicie:  [2,3],
     agua:      [3,1],
     tundra:    [3,2],
-    gelo:      [3,3]
+    neve:      [3,3]
 };
 
 function getUVAtlas(col, row) {
@@ -51,7 +51,7 @@ class Biomas {
             
             { nome: "deserto",  temp:[0.6,1.0], umi:[0.0,0.4], altura:[0.2,7.0] },
             { nome: "tundra",   temp:[-1.0,0.3], umi:[0.0,0.3], altura:[0.2,7.0] },
-            { nome: "gelo",     temp:[-1.0,0.3], umi:[0.3,1.0], altura:[0.2,7.0] },
+            { nome: "neve",     temp:[-1.0,0.3], umi:[0.3,1.0], altura:[0.2,7.0] },
 
             { nome: "floresta", temp:[0.3,0.8], umi:[0.5,1.0], altura:[0.2,7.0] },
             { nome: "planicie", temp:[0.3,0.7], umi:[0.3,0.7], altura:[0.2,7.0] },
@@ -61,14 +61,26 @@ class Biomas {
         ];
         this.feature = {
             planicie: [
-                { nome: "casa1/casa.obj",     peso: 3},
-                { nome: "torre/torre.obj",    peso: 1},
-                { nome: "",         peso: 240}
+                { nome: "",                     peso: 240},
+                { nome: "prop/casa1.obj",       peso: 3},
+                { nome: "prop/torre.obj",       peso: 1},
+                { nome: "pedra/pedra.obj",      peso: 1}
             ],
             deserto: [
-                { nome: "",         peso: 30},
-                { nome: "cacto/cacto.obj",   peso: 1}
-            ]//,
+                { nome: "",                     peso: 60},
+                { nome: "deserto/cacto.obj",    peso: 4},
+                { nome: "pedra/pedra.obj",      peso: 1}
+            ],
+            neve: [
+                { nome: "",                     peso: 60},
+                { nome: "neve/snowman.obj",     peso: 1},
+                { nome: "pedra/pedra.obj",      peso: 1}
+            ],
+            montanha: [
+                { nome: "",                     peso: 60},
+                { nome: "pedra/pedra.obj",      peso: 1}
+            ]
+            //,
             //floresta: [
             //    { nome: "arvore/arvore.obj", peso: 3},
             //    { nome: "",         peso: 15}
@@ -283,7 +295,6 @@ export class Terreno{
 
         this.meshes = fundo.meshes;
         this.textures = fundo.textures;
-        console.log(fundo.meshes);
     }
     buildWater(){
         const sizeX = this.tamanhoMapa[0];
@@ -349,7 +360,7 @@ export class Terreno{
         });
     }
     build(){
-        this.buildFundo();
+        //this.buildFundo();
         this.createElevations();
         this.createBiomas();
         this.buildMeshes();
@@ -369,7 +380,6 @@ export class Terreno{
         let featUrl = this.biomas.getFeatureType(this.pos[x][z][3])
 
         if(featUrl != ""){
-            console.log(featUrl);
             featUrl = "modelos/" + featUrl;
             let model = new Modelo({
                 pos: [x, 0, z],
@@ -379,6 +389,11 @@ export class Terreno{
             let ent = new Entidade([x, 0, z], this, "feature", model);
             ent.angulo = Math.random() * 360 - 180
             await model.loadFromOBJ();
+            if(featUrl == "modelos/prop/torre.obj"){
+                model.meshes[0].hasLight = true;
+                model.meshes[0].lightPos = [0,5,0];
+                model.meshes[0].lightStrengt = 1;
+            }
 
             this.entidades.push(ent);
             this.root.add(model);

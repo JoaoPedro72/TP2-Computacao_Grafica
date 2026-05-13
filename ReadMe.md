@@ -23,17 +23,17 @@
     1. Rotação aleatoria para as construções.
     1. Codigo para popular o mapa com construções.
     1. objetos que formarão o cenário (min 3)
-    1. Moitas de grama (até 6%)
-        Vento (+6%)
+    1. Mais tipos de objetos (até 8%)
+    
 
 ## Fazendo
 - Mundo
-    1. Precarregar modelos no inicio. (atualmente precione K)
+    1. Moitas de grama (até 6%)         Quebrou ;-;
+        Vento (+6%)
     
 
 ## Falta fazer
 - MUITO IMPORTANTE
-    1. Nome para a pagina/ jogo/ trabalho.
     1. Otimizar mapa com objetos
 - Gráficos
     1. Efeitos de partículas (até 8%)
@@ -42,14 +42,11 @@
     1. mundo maior, se espande
 - Outros
     1. Música (3%)
-    1. Escrever/colocar algo na faixa.
-
 ## Se der tempo
 - Mundo
     1. Relevo usando textura (10%)
     1. Skybox, skyphere ou skydome (até 10%)
     1. Objetos animados (até 10%)
-    1. Mais tipos de objetos (até 8%)
     1. deixar grama mais bonita, ta bem + -
     
 - Gráficos
