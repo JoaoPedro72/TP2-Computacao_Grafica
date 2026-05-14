@@ -101,30 +101,19 @@ export class ArvoreInstanced {
             gl.vertexAttribPointer(aInstRot, 1, gl.FLOAT, false, 0, 0);
             gl.vertexAttribDivisor(aInstRot, 1);
 
-            twgl.setUniforms(programInfo, {
-                u_projection:       s.projection,
-                u_view:             s.view,
-                u_model:            parentMatrix,
-                u_lightMatrix:      lightMatrix || s.lightMatrix,
-                u_shadowMap:        s.shadowTexture,
-                u_texture:          this.textures[mesh.material] || null,
-                u_useTexture:       this.textures[mesh.material] ? 1 : 0,
-                u_isWater:          0,
-                u_isInstanced:      1,
-                u_isGrass:          0,
-                u_lighting:         s.lightingEnabled ? 1 : 0,
-                u_sunDirection:     s.sunDirection,
-                u_sunStrength:      s.sunStrength,
-                u_emissive:         0.0,
-                u_isEmissive:       0,
-                u_pointLights:      s._lightsBuffer,
-                u_pointStrength:    s._strengthsBuffer,
-                u_numPointLights:   0,
-                u_cameraPos:        s.camera.pos,
-                u_specularStrength: 0.1,
-                u_shininess:        8.0,
-                u_time:             time,
-            });
+            s.uniforms.u_model =            parentMatrix;
+            s.uniforms.u_texture =          this.textures[mesh.material] || null;
+            s.uniforms.u_useTexture =       this.textures[mesh.material] ? 1  : 0;
+            s.uniforms.u_isWater =          0;
+            s.uniforms.u_isInstanced =      1;
+            s.uniforms.u_isGrass =          0;
+            s.uniforms.u_emissive =         0.0;
+            s.uniforms.u_isEmissive =       0;
+            s.uniforms.u_numPointLights =   0;
+            s.uniforms.u_specularStrength = 0.1;
+            s.uniforms.u_shininess =        8.0;
+
+            twgl.setUniforms(programInfo, s.uniforms);
 
             // 🔑 usar índices com instâncias
             const ext = gl.getExtension("ANGLE_instanced_arrays"); // fallback WebGL1

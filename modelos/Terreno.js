@@ -389,9 +389,9 @@ export class Terreno{
             let ent = new Entidade([x, 0, z], this, "feature", model);
             ent.angulo = Math.random() * 360 - 180
             await model.loadFromOBJ();
-            if(featUrl == "modelos/prop/torre.obj"){
+            if(featUrl == "modelos/prop/casa1.obj"){
                 model.meshes[0].hasLight = true;
-                model.meshes[0].lightPos = [0,5,0];
+                model.meshes[0].lightPos = [0,0,0];
                 model.meshes[0].lightStrengt = 1;
             }
 

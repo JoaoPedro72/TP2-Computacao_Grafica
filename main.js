@@ -72,12 +72,14 @@ async function main() {
 
         // 🔥 PASS 1 (shadow)
         setupGL.renderShadowPass((program, lightMatrix) => {
+            setupGL.setUniforms(lightMatrix);
             controle.terreno.draw(program, identity,lightMatrix,time);
             controle.root.draw(program, identity, lightMatrix, time);
         });
 
         // 🔥 PASS 2 (render normal)
         setupGL.renderScene((program) => {
+            setupGL.setUniforms(lightMatrix);
             controle.sol.draw(program, identity,lightMatrix,daytime);
             controle.terreno.draw(program, identity,lightMatrix,time);
             controle.root.draw(program, identity,lightMatrix,time);

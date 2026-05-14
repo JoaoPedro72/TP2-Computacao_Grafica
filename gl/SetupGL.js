@@ -187,6 +187,38 @@ export class SetupGL {
         };
     }
 
+    setUniforms(lightMatrix){
+        this._lightsBuffer.fill(0);
+        this._strengthsBuffer.fill(0);
+        for (let i = 0; i < Math.min(this.pointLights.length, 8); i++) {
+            this._lightsBuffer[i*3]   = this.pointLights[i][0];
+            this._lightsBuffer[i*3+1] = this.pointLights[i][1];
+            this._lightsBuffer[i*3+2] = this.pointLights[i][2];
+            this._strengthsBuffer[i]  = this.pointStrength[i];
+        }
+        this.lights = 0
+
+        this.uniforms = {
+            u_projection: this.projection,
+            u_view: this.view,
+
+            u_lightMatrix: lightMatrix || this.lightMatrix,
+            u_shadowMap: this.shadowTexture,
+
+            u_lighting: this.lightingEnabled ? 1 : 0,
+
+            u_sunDirection: this.sunDirection,
+            u_sunStrength: this.sunStrength,
+
+            u_pointLights: this._lightsBuffer,
+            u_pointStrength: this._strengthsBuffer,
+            u_numPointLights: this.pointLights.length,
+
+            u_time: performance.now() * 0.001,
+            
+            u_cameraPos: this.camera.pos,
+        }
+    }
     drawMesh(pos, mesh, textures, modelMatrix, programInfo, lightMatrix, isEmissive = false, time) {
         if(!this.camera.itsOnCamera(pos) && !mesh.alwaysRender) {
             return;
@@ -194,73 +226,49 @@ export class SetupGL {
         if(modelMatrix[13] < -20) {
             return;
         }
-        if(mesh.hasLight && this.camera.itsOnCamera(pos)){
+        if(mesh.hasLight && this.camera.itsOnCamera(pos) && utills.distanciaQuadrada(pos, this.camera.pos) < 3000){
             this.pointLights[this.lights] = [];
             this.pointLights[this.lights][0] = mesh.lightPos[0] + pos[0];
             this.pointLights[this.lights][1] = mesh.lightPos[1] + pos[1];
             this.pointLights[this.lights][2] = mesh.lightPos[2] + pos[2];
             this.pointStrength[this.lights] = mesh.lightStrengt;
+            
+            this._lightsBuffer[this.lights*3]   = this.pointLights[this.lights][0];
+            this._lightsBuffer[this.lights*3+1] = this.pointLights[this.lights][1];
+            this._lightsBuffer[this.lights*3+2] = this.pointLights[this.lights][2];
+            this._strengthsBuffer[this.lights]  = this.pointStrength[this.lights];
+
             this.lights ++;
             if(this.lights == 8) this.lights = 0;
+            
+            this.uniforms.u_pointLights = this._lightsBuffer;
+            this.uniforms.u_pointStrength = this._strengthsBuffer;
+            this.uniforms.u_numPointLights = this.pointLights.length;
         }
 
         const tex = textures[mesh.material];
 
-        const maxLights = 8;
-
-        this._lightsBuffer.fill(0);
-        this._strengthsBuffer.fill(0);
-        for (let i = 0; i < Math.min(this.pointLights.length, maxLights); i++) {
-            this._lightsBuffer[i*3]   = this.pointLights[i][0];
-            this._lightsBuffer[i*3+1] = this.pointLights[i][1];
-            this._lightsBuffer[i*3+2] = this.pointLights[i][2];
-            this._strengthsBuffer[i]  = this.pointStrength[i];
-        }
-
-        const uniforms = {
-            u_projection: this.projection,
-            u_view: this.view,
-            u_model: modelMatrix,
-
-            u_lightMatrix: lightMatrix || this.lightMatrix,
-            u_shadowMap: this.shadowTexture,
-
-            u_lighting: this.lightingEnabled ? 1 : 0,
-
-            // ☀️ sol
-            u_sunDirection: this.sunDirection,
-            u_sunStrength: this.sunStrength,
-
-            // objeto emissivo
-            u_emissive: isEmissive ? 1.5 : 0.0,
-            u_isEmissive: isEmissive ? 1 : 0,
-
-            // 🔥 tochas
-            u_pointLights: this._lightsBuffer,
-            u_pointStrength: this._strengthsBuffer,
-            u_numPointLights: this.pointLights.length,
-
-            // 🎨 textura
-            u_texture: tex || null,
-            u_useTexture: tex ? 1 : 0,
-
-            u_time: performance.now() * 0.001,
-            u_isWater: mesh.isWater ? 1 : 0,
-            u_isGrass: mesh.isGrass ? 1 : 0,
-            u_isInstanced:            0,
-
-            u_cameraPos: this.camera.pos,
-
-            u_specularStrength: mesh.specularStrength ?? 0.3, // intensidade do brilho
-            u_shininess: mesh.shininess ?? 16.0,       // quão concentrado é
-        };
+        this.uniforms.u_model =         modelMatrix,
+        // objeto emissivo
+        this.uniforms.u_emissive =      isEmissive ? 1.5 : 0.0;
+        this.uniforms.u_isEmissive =    isEmissive ? 1 : 0;
+        // 🎨 textura
+        this.uniforms.u_texture =       tex || null;
+        this.uniforms.u_useTexture =    tex ? 1 : 0;
+        // tipos
+        this.uniforms.u_isWater =       mesh.isWater ? 1 : 0;
+        this.uniforms.u_isGrass =       mesh.isGrass ? 1 : 0;
+        this.uniforms.u_isInstanced =   0;
+        // brilho e reflexo de luz
+        this.uniforms.u_specularStrength = mesh.specularStrength ?? 0.3; // intensidade do brilho
+        this.uniforms.u_shininess =     mesh.shininess ?? 16.0;       // quão concentrado é
 
         const gl = this.gl;
 
         gl.useProgram(programInfo.program);
 
         twgl.setBuffersAndAttributes(gl, programInfo, mesh.bufferInfo);
-        twgl.setUniforms(programInfo, uniforms);
+        twgl.setUniforms(programInfo, this.uniforms);
         twgl.drawBufferInfo(gl, mesh.bufferInfo);
     }
 
@@ -299,7 +307,7 @@ export class SetupGL {
     }
 
     addLight(pos, strength){
-        this.pointLights[this.lights] = pos;
+        this.pointLights[this.lights] = pos;uniforms
         this.pointStrength[this.lights] = strength;
 
         this.lights ++;

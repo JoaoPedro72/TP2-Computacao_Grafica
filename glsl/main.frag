@@ -82,6 +82,7 @@ void main() {
     float dayFactor = clamp(u_sunDirection.y * 0.5 + 0.5, 0.0, 1.0);
 
     float light = 0.0;
+    float artlight = 0.0;
     float specular = 0.0;
 
     // ☀️ SOL
@@ -106,7 +107,7 @@ void main() {
         float diff = max(dot(normal, dir), 0.0);
         float att = 1.0/(1.0 + 0.2*dist + 0.05*dist*dist);
 
-        light += diff * att * u_pointStrength[i];
+        artlight += diff * att * u_pointStrength[i];
 
         // ✨ specular tochas
         vec3 halfDir = normalize(dir + viewDir);
@@ -124,7 +125,7 @@ void main() {
     // 🌑 SOMBRA
     float shadow = getShadow();
 
-    float lighting = ambient + light * shadow;
+    float lighting = ambient + light * shadow + artlight;
 
     // 🌊 ÁGUA
     if(u_isWater == 1){

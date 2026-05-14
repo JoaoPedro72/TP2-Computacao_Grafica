@@ -1,7 +1,14 @@
 import * as twgl from "../twgl.full.module.js";
 import { generateGrid } from "../PerlinNoise.js";
+import { SetupGL } from "../gl/SetupGL.js";
 
 export class Grama {
+    /**
+     * 
+     * @param {SetupGL} setupGL 
+     * @param {*} pos 
+     * @param {*} tamanho 
+     */
     constructor(setupGL, pos, tamanho) {
         this.setupGL = setupGL;
         this.gl = setupGL.gl;
@@ -218,30 +225,18 @@ export class Grama {
             gl.vertexAttribDivisor(aInstRot, 1);
         }
 
-        twgl.setUniforms(programInfo, {
-            u_projection:       s.projection,
-            u_view:             s.view,
-            u_model:            parentMatrix,
-            u_lightMatrix:      lightMatrix || s.lightMatrix,
-            u_shadowMap:        s.shadowTexture,
-            u_texture:          this.texture,
-            u_useTexture:       1,
-            u_isWater:          0,
-            u_isGrass:          1,
-            u_isInstanced:      1,
-            u_lighting:         s.lightingEnabled ? 1 : 0,
-            u_sunDirection:     s.sunDirection,
-            u_sunStrength:      s.sunStrength,
-            u_emissive:         0.0,
-            u_isEmissive:       0,
-            u_pointLights:      new Float32Array(24),
-            u_pointStrength:    new Float32Array(8),
-            u_numPointLights:   0,
-            u_cameraPos:        s.camera.pos,
-            u_specularStrength: 0.0,
-            u_shininess:        4.0,
-            u_time:             time,
-        });
+        s.uniforms.u_model =            parentMatrix,
+        s.uniforms.u_texture =          this.texture,
+        s.uniforms.u_useTexture =       1,
+        s.uniforms.u_isWater =          0,
+        s.uniforms.u_isGrass =          1,
+        s.uniforms.u_isInstanced =      1,
+        s.uniforms.u_emissive =         0.0,
+        s.uniforms.u_isEmissive =       0,
+        s.uniforms.u_specularStrength = 0.0,
+        s.uniforms.u_shininess =        4.0,
+
+        twgl.setUniforms(programInfo, s.uniforms);
 
         gl.drawArraysInstanced(gl.TRIANGLES, 0, this._vertCount, this.instanceCount);
 
