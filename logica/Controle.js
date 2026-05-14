@@ -62,7 +62,7 @@ export class Controle {
             entidade.tick(time);
         }
         
-        this.camera.updateCamera([this.player.pos[0],this.player.pos[1],this.player.pos[2]], -this.player.angulo - 90);
+        this.camera.updateCamera(this.player);
 
         if(this.camera.cameraMode === "orbit") this.player.controls = true;
     }
