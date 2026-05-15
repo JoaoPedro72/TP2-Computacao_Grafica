@@ -82,6 +82,19 @@ function octaveNoise(perlin, x, y, octaves = 4) {
     return total / max;
 }
 
+/**
+ * 
+ * @param {{
+ *      x_size: Number,
+ *      y_size: Number,
+ *      scale: Number,
+ *      seed: Number,
+ *      heightScale: Number,
+ *      offsetX: Number,
+ *      offsetY: Number
+ * }} param 
+ * @returns {Number[][]}
+ */
 export function generateGrid({
     x_size,
     y_size,

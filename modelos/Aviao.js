@@ -110,6 +110,12 @@ export class AviaoModelo{
         this.faixa3.meshes.forEach(mesh => {
             mesh.alwaysRender = true;
         });
+        this.leftBraco.meshes.forEach(mesh => {
+            mesh.alwaysRender = true;
+        });
+        this.rightBraco.meshes.forEach(mesh => {
+            mesh.alwaysRender = true;
+        });
     }
 
     setPos(pos){

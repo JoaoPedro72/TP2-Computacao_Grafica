@@ -28,7 +28,7 @@ export class Camera {
             this.yaw += e.movementX * this.sensitivity;
             this.pitch -= e.movementY * this.sensitivity;
         }
-        // Limita o pitch para evitar flip
+        // Limita o pitch para evitar flip    
         this.pitch = Math.max(-89, Math.min(89, this.pitch));
     }
     zoom(e){
@@ -39,7 +39,6 @@ export class Camera {
         this.fov += e.deltaY * 0.05;
         this.fov = Math.max(20,Math.min(100, this.fov));
     }
-    
     updateLockPos(){
         if(this.keys[1]) {this.lockPos = 0; this.cameraMode = "locked";}
         if(this.keys[2]) {this.lockPos = 1; this.cameraMode = "locked";}
@@ -52,6 +51,9 @@ export class Camera {
     }
     updateCamera(player_pos, player_angle){
         this.updateLockPos();
+
+        if(this.keys["-"] && this.distancia < 40) this.distancia += 0.5;
+        if(this.keys["+"] && this.distancia > 3) this.distancia -= 0.5;
 
         if(this.cameraMode === "free") this.moveFree();
         else if(this.cameraMode === "inAxis") this.moveInAxis();
@@ -136,7 +138,6 @@ export class Camera {
         if(this.keys[" "]) this.pos[1] += this.speed;
         if(this.keys["shift"]) this.pos[1] -= this.speed;
     }
-
     cockpit(pos, angle){
 
         if(this.keys["arrowleft"]) this.cockpitYawOffset -= 1;
@@ -160,7 +161,6 @@ export class Camera {
         this.yaw = angle + this.cockpitYawOffset;
         this.pitch = -5 + this.cockpitPitchOffset;
     }
-
     getFront(){
         return utills.normalize(
             utills.getFront(this.yaw, this.pitch)

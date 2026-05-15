@@ -220,6 +220,7 @@ export class SetupGL {
         }
     }
     drawMesh(pos, mesh, textures, modelMatrix, programInfo, lightMatrix, isEmissive = false, time) {
+        if(mesh.isInvisible) return;
         if(!this.camera.itsOnCamera(pos) && !mesh.alwaysRender) {
             return;
         }

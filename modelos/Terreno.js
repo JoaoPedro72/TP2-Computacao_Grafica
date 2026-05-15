@@ -131,6 +131,7 @@ export class Terreno{
     constructor(setupGL, tamanhoMapa = [100, 100]){
         this.setupGL = setupGL;
         this.tamanhoMapa = tamanhoMapa;
+        this.chunks = [];
 
         this.sementeElevacao = Math.random()*10000;
         this.sementeTemperatura = Math.random()*10000;
@@ -145,7 +146,6 @@ export class Terreno{
         //       [3] Bioma
         //       [4] entidades
         this.meshes = [];
-        this.textures = {};
         this.objUrl= "modelos/terreno/";
 
         this.biomas = new Biomas();
@@ -164,16 +164,19 @@ export class Terreno{
             setupGL: this.setupGL,
             objUrl: this.objUrl
         });
-
-        this.build();
+        this.textures = this.root.textures;
+        this.textures.atlas = this.setupGL.loadTexture(this.objUrl + "atlas.png")
+        this.build(0,0);
     }
-    createElevations(){
+    createElevations(offsetX = 0, offsetZ = 0){
         const h1 = generateGrid({
             x_size:this.tamanhoMapa[0],
             y_size:this.tamanhoMapa[1],
             scale:80,
             seed:this.sementeElevacao,
-            heightScale:5
+            heightScale:5,
+            offsetX: offsetX,
+            offsetY: offsetZ
         });
 
         const h2 = generateGrid({
@@ -181,22 +184,26 @@ export class Terreno{
             y_size:this.tamanhoMapa[1],
             scale:10,
             seed:this.sementeElevacao/100,
-            heightScale:1
+            heightScale:1,
+            offsetX: offsetX,
+            offsetY: offsetZ
         });
 
         for(let x=0;x<this.tamanhoMapa[0];x++){
             for(let z=0;z<this.tamanhoMapa[1];z++){
-                this.pos[x][z][0] = (h1[x][z] + h2[x][z])*5;
+                this.pos[x + offsetX][z + offsetZ][0] = (h1[x][z] + h2[x][z])*5;
             }
         }
     }
-    createBiomas(){
+    createBiomas(offsetX, offsetZ){
         const temp = generateGrid({
             x_size:this.tamanhoMapa[0],
             y_size:this.tamanhoMapa[1],
             scale:30,
             seed:this.sementeTemperatura,
-            heightScale: 2
+            heightScale: 2,
+            offsetX: offsetX,
+            offsetY: offsetZ
         });
 
         const umi = generateGrid({
@@ -204,7 +211,9 @@ export class Terreno{
             y_size:this.tamanhoMapa[1],
             scale:30,
             seed:this.sementeUmidade,
-            heightScale: 2
+            heightScale: 2,
+            offsetX: offsetX,
+            offsetY: offsetZ
         });
 
         for(let x=0;x<this.tamanhoMapa[0];x++){
@@ -212,15 +221,15 @@ export class Terreno{
 
                 const t = (temp[x][z]+1)/2;
                 const u = (umi[x][z]+1)/2;
-                const h = this.pos[x][z][0];
+                const h = this.pos[x + offsetX][z + offsetZ][0];
 
-                this.pos[x][z][1] = t;
-                this.pos[x][z][2] = u;
-                this.pos[x][z][3] = this.biomas.getBioma(t,u,h);
+                this.pos[x + offsetX][z + offsetZ][1] = t;
+                this.pos[x + offsetX][z + offsetZ][2] = u;
+                this.pos[x + offsetX][z + offsetZ][3] = this.biomas.getBioma(t,u,h);
             }
         }
     }
-    buildMeshes(){
+    buildMeshes(chunk){
         const sizeX = this.tamanhoMapa[0];
         const sizeZ = this.tamanhoMapa[1];
 
@@ -273,15 +282,13 @@ export class Terreno{
 
         const bufferInfo = twgl.createBufferInfoFromArrays(this.setupGL.gl, arrays);
 
-
-        this.meshes.push({ 
+        chunk.meshes.push({ 
             bufferInfo, 
             material: "atlas", 
             alwaysRender: true,
             specularStrength: 0, 
             shininess: 4
         });
-        this.textures.atlas = this.setupGL.loadTexture(this.objUrl + "atlas.png")
     }
     buildFundo(){
         const fundo = new Modelo({
@@ -296,7 +303,7 @@ export class Terreno{
         this.meshes = fundo.meshes;
         this.textures = fundo.textures;
     }
-    buildWater(){
+    buildWater(chunk){
         const sizeX = this.tamanhoMapa[0];
         const sizeZ = this.tamanhoMapa[1];
 
@@ -350,7 +357,7 @@ export class Terreno{
 
         const bufferInfo = twgl.createBufferInfoFromArrays(this.setupGL.gl, arrays);
 
-        this.meshes.push({
+        chunk.meshes.push({
             bufferInfo,
             material: "atlas",
             isWater: true,
@@ -359,19 +366,29 @@ export class Terreno{
             shininess: 128
         });
     }
-    build(){
-        //this.buildFundo();
-        this.createElevations();
-        this.createBiomas();
-        this.buildMeshes();
-        this.buildWater();
+    build(x = 0, z = 0){
+        const chunk = new Modelo({
+            pos: [x, 0, z],
+            rot: [0, 0, 0],
+            scale: [1, 1, 1],
+            setupGL: this.setupGL,
+            objUrl: this.objUrl
+        });
 
-        this.root.meshes = this.meshes;
-        this.root.textures = this.textures;
+        this.createElevations(x, z);
+        this.createBiomas(x, z);
+        this.buildMeshes(chunk);
+        this.buildWater(chunk);
 
-        this.root.meshes.forEach(mesh => {
+        chunk.textures = this.textures;
+
+        chunk.meshes.forEach(mesh => {
             mesh.alwaysRender = true;
         });
+
+        this.chunks[x] = []
+        this.chunks[x][z] = chunk;
+        this.root.add(chunk);
     }
     draw(program, identity, lightMatrix, time){
         this.root.draw(program, identity, lightMatrix, time);

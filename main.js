@@ -25,7 +25,10 @@ document.addEventListener("mousemove", (e) => {
     camera.rodar(e);
 });
 
-setupGL.canvas.addEventListener("wheel",(e) => {camera.zoom(e);},{ passive: false });
+setupGL.canvas.addEventListener("wheel",(e) => {
+    camera.zoom(e);
+    setupGL.updateProjection(window)
+},{ passive: false });
 
 window.addEventListener("resize", () => setupGL.updateProjection(window));
 
@@ -54,15 +57,12 @@ async function main() {
 
         const daytime = time * speed;
         //const daytime = 5;
-
+        
         setupGL.sunDirection = [
             Math.cos(daytime),
             Math.sin(daytime),
             0.0
         ];
-
-        //setupGL.updateProjection(window);
-
         
         controle.sol.root.pos = camera.pos;
         setupGL.setCamera(camera.pos, camera.getTarget());

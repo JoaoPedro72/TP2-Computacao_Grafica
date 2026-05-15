@@ -87,6 +87,7 @@ export class Modelo {
         const world = twgl.m4.multiply(parentMatrix, local);
 
         for (let mesh of this.meshes) {
+            if(mesh.isInvisible)return;
             this.setupGL.drawMesh(
                 this.pos,
                 mesh,

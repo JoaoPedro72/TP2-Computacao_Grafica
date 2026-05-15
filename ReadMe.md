@@ -34,7 +34,6 @@
 
 ## Falta fazer
 - MUITO IMPORTANTE
-    1. Otimizar mapa com objetos
 - Gráficos
     1. Efeitos de partículas (até 8%)
     1. Corrigir agua branca a noite, denovo
