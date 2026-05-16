@@ -61,11 +61,11 @@ async function main() {
             0.0
         ];
 
-        //setupGL.updateProjection(window);
+        setupGL.updateProjection(window);
 
         
         controle.sol.root.pos = camera.pos;
-        setupGL.setCamera(camera.pos, camera.getTarget());
+        setupGL.setCamera(camera.pos, camera.getTarget(), camera.up);
 
         const lightMatrix = setupGL.computeLightMatrix();
         const identity = twgl.m4.identity()
