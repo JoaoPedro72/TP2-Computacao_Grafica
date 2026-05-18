@@ -33,12 +33,12 @@ export class Player {
         }
         if(this.keys.a) {
             this.angulo += this.velCurva * time;
-            this.anguloFaixa[0] -= 0.05 * time * this.velocidade/2;
+            this.anguloFaixa[0] -= 0.1 * time * this.velocidade/2;
             if(this.anguloFaixa[0] < -25) this.anguloFaixa[0] = -25;
         }
         if(this.keys.d) {
             this.angulo -= this.velCurva * time;
-            this.anguloFaixa[0] += 0.05 * time * this.velocidade/2;
+            this.anguloFaixa[0] += 0.1 * time * this.velocidade/2;
             if(this.anguloFaixa[0] > 25) this.anguloFaixa[0] = 25;
         }
         if(this.keys.c) {

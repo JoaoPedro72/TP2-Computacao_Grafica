@@ -62,13 +62,14 @@ class Biomas {
         ];
         this.feature = {
             planicie: [
-                { nome: "",                     peso: 240},
-                { nome: "prop/casa1.obj",       peso: 3},
+                { nome: "",                     peso: 1000},
+                { nome: "prop/casa1.obj",       peso: 4},
                 { nome: "prop/torre.obj",       peso: 1},
-                { nome: "pedra/pedra.obj",      peso: 1}
+                { nome: "pedra/pedra.obj",      peso: 1},
+                { nome: "prop/moinho.obj",      peso: 1}
             ],
             deserto: [
-                { nome: "",                     peso: 60},
+                { nome: "",                     peso: 80},
                 { nome: "deserto/cacto.obj",    peso: 4},
                 { nome: "pedra/pedra.obj",      peso: 1}
             ],
@@ -78,8 +79,9 @@ class Biomas {
                 { nome: "pedra/pedra.obj",      peso: 1}
             ],
             montanha: [
-                { nome: "",                     peso: 60},
-                { nome: "pedra/pedra.obj",      peso: 1}
+                { nome: "",                     peso: 180},
+                { nome: "pedra/pedra.obj",      peso: 2},
+                { nome: "prop/torre.obj",       peso: 1}
             ]
         }
     }

@@ -46,7 +46,7 @@ float smoothNoise(vec2 p){
 void main() {
 
     vec3 pos = a_position;   
-
+    
 
     // Instancing para a grama e arvores
     float s = sin(a_instanceRot);
@@ -57,21 +57,22 @@ void main() {
     // ONDA REAL (VERTEX)
     float wave = 0.0;
 
+    vec4 worldPos = u_model * vec4(pos, 1.0);
     if(u_isWater == 1){
 
-        float n = smoothNoise(pos.xz * 0.1);
+        float n = smoothNoise(worldPos.xz * 0.1);
 
         float amplitude = mix(0.15, 0.5, n);
         float freq = mix(0.2, 0.7, n);
         float phase = n * 6.28318;
 
         wave =
-            sin(pos.x * freq + u_time + phase) +
-            cos(pos.z * freq + u_time * 0.8 + phase);
+            sin(worldPos.x * freq + u_time + phase) +
+            cos(worldPos.z * freq + u_time * 0.8 + phase);
 
         wave *= amplitude * 0.8;
 
-        pos.y += wave;
+        worldPos.y += wave;
     }
 
     v_wave = wave;
@@ -84,7 +85,7 @@ void main() {
 
         // pos.y aqui já é a altura LOCAL do vértice (0 = base, h = topo)
         // a_instancePos.y é a altura do terreno — não conta pro balanço
-        float heightFactor = clamp(pos.y, 0.0, 1.0); // base = 0, topo = 1
+        float heightFactor = clamp(worldPos.y, 0.0, 1.0); // base = 0, topo = 1
 
         // Usar a posição da instância como fase para cada tufo balançar diferente
         float phase = a_instancePos.x * 0.3 + a_instancePos.z * 0.7;
@@ -96,7 +97,7 @@ void main() {
         pos.z += windZ;
     }
 
-    vec4 worldPos = u_model * vec4(pos, 1.0);
+    
 
     v_worldPos = worldPos.xyz;
 

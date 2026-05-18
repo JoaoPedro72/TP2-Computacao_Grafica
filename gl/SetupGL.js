@@ -220,7 +220,7 @@ export class SetupGL {
         }
     }
     drawMesh(pos, mesh, textures, modelMatrix, programInfo, lightMatrix, isEmissive = false, time) {
-        if(utills.distanciaQuadrada(pos, this.camera.pos) > 10000 && !mesh.alwaysRender) return;
+        if(utills.distanciaQuadrada(pos, this.camera.pos) > 15000 && !mesh.alwaysRender) return;
         if(mesh.isInvisible) return;
         if(!this.camera.itsOnCamera(pos) && !mesh.alwaysRender) {
             return;

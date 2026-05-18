@@ -120,7 +120,7 @@ void main() {
     light += moon * (1.0 - dayFactor);
 
     // 🌫️ AMBIENT
-    float ambient = mix(0.2, 0.45, dayFactor);
+    float ambient = mix(0.1, 0.45, dayFactor);
 
     // 🌑 SOMBRA
     float shadow = getShadow();
