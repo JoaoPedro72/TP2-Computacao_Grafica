@@ -23,24 +23,24 @@ export class Modelo {
     }
 
     async loadFromOBJ() {
+        const cache = this.setupGL.modelCache;
 
-        // 🔥 CACHE (nível modelo)
-        if (this.setupGL.modelCache?.[this.objUrl]) {
-            const cached = this.setupGL.modelCache[this.objUrl];
+        // 🔥 CACHE (nível parse — dados brutos, sem bufferInfo)
+        let parseData = cache[this.objUrl];
 
-            this.meshes = cached.meshes;
-            this.textures = cached.textures;
-            return;
+        if (!parseData) {
+            const { parts, materials } = await parser.loadOBJWithMTL(this.objUrl);
+            const basePath = this.objUrl.substring(0, this.objUrl.lastIndexOf("/") + 1);
+
+            // Salva apenas os dados de parse (CPU), nunca bufferInfo (GPU)
+            parseData = { parts, materials, basePath };
+            cache[this.objUrl] = parseData;
         }
 
-        const {parts, materials} = await parser.loadOBJWithMTL(this.objUrl);
+        const { parts, materials, basePath } = parseData;
 
-        const basePath = this.objUrl.substring(0, this.objUrl.lastIndexOf("/") + 1);
-
-        const meshes = [];
+        // 🔥 TEXTURAS — textureCache já evita duplicatas na GPU
         const textures = {};
-
-        // 🔥 TEXTURAS
         for (let m in materials) {
             if (materials[m].map_Kd) {
                 textures[m] = this.setupGL.loadTexture(
@@ -49,25 +49,16 @@ export class Modelo {
             }
         }
 
-        // 🔥 MESHES
+        // 🔥 MESHES — bufferInfo sempre novo (evita usar buffers deletados)
+        const meshes = [];
         for (let m in parts) {
             const mesh = parts[m];
             mesh.material = m;
-
-            meshes.push(
-                this.setupGL.makeMesh(mesh)
-            );
+            meshes.push(this.setupGL.makeMesh(mesh));
         }
 
         this.meshes = meshes;
         this.textures = textures;
-
-        // 🔥 salva cache
-        this.setupGL.modelCache = this.setupGL.modelCache || {};
-        this.setupGL.modelCache[this.objUrl] = {
-            meshes,
-            textures
-        };
     }
 
     getLocalMatrix() {

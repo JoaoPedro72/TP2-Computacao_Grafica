@@ -9,7 +9,7 @@ export class Player {
         this.angulo = 0;
         this.anguloFaixa = [0,0];
         this.velocidade = 4;
-        this.velCurva = (10 - this.velocidade)*2;
+        this.velCurva = 12;
         this.model = model;
         this.controls = true;
     }
@@ -25,7 +25,7 @@ export class Player {
         this.model.setPos(this.pos);
     }
     imputs(time){
-        if(this.keys.w && this.velocidade < 10){
+        if(this.keys.w && this.velocidade < 15){
             this.velocidade += time;
         }
         if(this.keys.s && this.velocidade > 1){

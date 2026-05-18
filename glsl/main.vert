@@ -69,7 +69,7 @@ void main() {
             sin(pos.x * freq + u_time + phase) +
             cos(pos.z * freq + u_time * 0.8 + phase);
 
-        wave *= amplitude * 0.5;
+        wave *= amplitude * 0.8;
 
         pos.y += wave;
     }

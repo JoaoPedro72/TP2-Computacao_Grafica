@@ -134,7 +134,7 @@ void main() {
         float foam = smoothstep(0.6, 1.0, waveNorm);
         float dark = smoothstep(0.0, 0.4, waveNorm);
 
-        color.rgb += foam * 0.4 * lighting;
+        color.rgb += foam * 0.6 ;
         color.rgb *= 1.0 - dark * 0.4;
     }
 

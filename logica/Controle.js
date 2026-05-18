@@ -1,14 +1,11 @@
 import { Modelo } from "../gl/Modelo.js";
 import { Utills } from "../Utills.js";
 
-import { PlayerModelo } from "../modelos/Player.js";
 import { SolModelo } from "../modelos/Sol.js";
 import { AviaoModelo } from "../modelos/Aviao.js";
 import { Terreno } from "../modelos/Terreno.js";
 import { Player } from "./Player.js";
-import { Entidade } from "./Entidade.js";
 
-import { Grama } from "../modelos/Grama.js";
 import { ArvoreInstanced } from "../modelos/ArvoreInstanced.js";
 import { SetupGL } from "../gl/SetupGL.js";
 import { Camera } from "../Camera.js";
@@ -17,67 +14,97 @@ const utills = new Utills();
 
 export class Controle {
     /**
-     * 
-     * @param {SetupGL} setupGL 
-     * @param {*} keys 
-     * @param {Camera} camera 
+     * @param {SetupGL} setupGL
+     * @param {*}       keys
+     * @param {Camera}  camera
      */
     constructor(setupGL, keys, camera){
         this.setupGL = setupGL;
-        this.keys = keys;
-        this.camera = camera;
-        this.cameraWait = false;
-        this.cameraWait2 = false;
+        this.keys    = keys;
+        this.camera  = camera;
+
         this.lightingSwitch = false;
-        this.hasFeatures = false;
-        
-        this.root = new Modelo({
-            setupGL: setupGL
+
+        // ── Nó raiz de cena (player, avião, etc.) ──
+        this.root = new Modelo({ setupGL });
+
+        // ── Sistemas ────────────────────────────────
+        this.sol     = new SolModelo(setupGL);
+        this.aviao   = new AviaoModelo(setupGL);
+        this.terreno = new Terreno(setupGL, [32, 32], 3);
+        this.player  = new Player([50, 20, 50], keys, this.aviao);
+
+        // ── Árvores instanced ────────────────────────
+        // Registradas no terreno — terreno.draw() as inclui automaticamente,
+        // sem exigir nenhuma mudança no main.js.
+        this.arvores = new ArvoreInstanced(setupGL);
+        this.terreno.addDrawable(this.arvores);
+
+        // Conecta árvores ao ciclo de vida dos chunks
+        this.terreno.onChunkCarregado(chunk => {
+            this.arvores.addChunk(chunk, this.terreno);
+        });
+        this.terreno.onChunkDescarregado(({ cx, cz }) => {
+            this.arvores.removeChunk(cx, cz);
         });
 
-        this.sol = new SolModelo(setupGL);
-        this.aviao = new AviaoModelo(setupGL);
-        this.terreno = new Terreno(setupGL, [100, 100]);
-
-        this.player = new Player([this.terreno.tamanhoMapa[0]/2,20,this.terreno.tamanhoMapa[1]/2],keys,this.aviao);
-
+        // ── Cena ────────────────────────────────────
         this.root.add(this.aviao);
-
         this.aviao.setPos(this.player.pos);
-        
-        this.grama = new Grama(this.setupGL, this.terreno.pos, this.terreno.tamanhoMapa);
 
-        this.arvores = new ArvoreInstanced(this.setupGL, this.terreno.pos, this.terreno.tamanhoMapa);
-
-        this.root.add(this.grama)
-        this.root.add(this.arvores)
+        // Assets async em background
+        this._initAsync();
     }
-    tick(time){
-        this.keysCommands();
 
-        
+    async _initAsync(){
+        // Carrega OBJ da árvore uma vez.
+        // Chunks que chegam depois de build() terminar funcionam normalmente via callback.
+        // Chunks que já estavam prontos durante o carregamento são recuperados abaixo.
+        await this.arvores.build();
+
+        for(const chunk of this.terreno.chunks.values()){
+            if(chunk.estado === "ready"){
+                this.arvores.addChunk(chunk, this.terreno);
+            }
+        }
+    }
+
+    // ──────────────────────────────────────────
+    //  Loop principal
+    // ──────────────────────────────────────────
+
+    tick(time){
+        this._keysCommands();
+
         this.player.tick(time);
 
-        for(let entidade of this.terreno.entidades){
-            entidade.tick(time);
+        // Itera entidades de todos os chunks ativos
+        for(const chunk of this.terreno.chunks.values()){
+            for(const entidade of chunk.entidades){
+                entidade.tick(time);
+            }
         }
-        
-        this.camera.updateCamera([this.player.pos[0],this.player.pos[1],this.player.pos[2]], -this.player.angulo - 90);
+
+        // Carrega/descarrega chunks conforme posição do jogador
+        this.terreno.tick(this.player.pos[0], this.player.pos[2]);
+
+        this.camera.updateCamera(
+            [this.player.pos[0], this.player.pos[1], this.player.pos[2]],
+            -this.player.angulo - 90
+        );
 
         if(this.camera.cameraMode === "orbit") this.player.controls = true;
     }
 
-    async keysCommands(){
+    // ──────────────────────────────────────────
+    //  Comandos de teclado
+    // ──────────────────────────────────────────
+
+    _keysCommands(){
         if(this.keys.l && !this.lightingSwitch){
             this.lightingSwitch = true;
             this.setupGL.lightingEnabled = !this.setupGL.lightingEnabled;
         }
         if(!this.keys.l) this.lightingSwitch = false;
-
-        if(!this.hasFeatures){
-            this.hasFeatures = true;
-            this.terreno.addFeatures();
-            await this.arvores.build();
-        }
     }
 }

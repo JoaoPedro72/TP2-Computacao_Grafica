@@ -88,7 +88,10 @@ async function main() {
         if(time > segundos){
             const fps = frames/(time - segundos + 4) | 0;
             log.innerHTML = `
-                FPS: ${fps}
+                <div> FPS:    ${fps}
+                </div>
+                <div> ANGULO: ${controle.player.angulo | 0}
+                </div>
             `;
             frames = 0;
             segundos = time + 4;

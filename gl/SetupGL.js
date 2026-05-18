@@ -114,9 +114,9 @@ export class SetupGL {
     // ☀️ matriz da luz
     computeLightMatrix() {
         const lightPos = [
-            this.sunDirection[0] * 100,
+            this.sunDirection[0] * 100 + this.camera.pos[0],
             this.sunDirection[1] * 100,
-            this.sunDirection[2] * 100 + + this.camera.pos[2]
+            this.sunDirection[2] * 100 + this.camera.pos[2]
         ];
 
         const target = [this.camera.pos[0], 0, this.camera.pos[2]];
@@ -220,6 +220,7 @@ export class SetupGL {
         }
     }
     drawMesh(pos, mesh, textures, modelMatrix, programInfo, lightMatrix, isEmissive = false, time) {
+        if(utills.distanciaQuadrada(pos, this.camera.pos) > 10000 && !mesh.alwaysRender) return;
         if(mesh.isInvisible) return;
         if(!this.camera.itsOnCamera(pos) && !mesh.alwaysRender) {
             return;
@@ -308,7 +309,7 @@ export class SetupGL {
     }
 
     addLight(pos, strength){
-        this.pointLights[this.lights] = pos;uniforms
+        this.pointLights[this.lights] = pos;
         this.pointStrength[this.lights] = strength;
 
         this.lights ++;

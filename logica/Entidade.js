@@ -12,46 +12,60 @@ const utills = new Utills();
 
 /**
  * @class Entidade
+ *
+ * Compatível com o sistema de chunks de Terreno.
+ * Usa map.getAlturaNoMundo() e map.registrarEntidade()
+ * em vez de acessar map.pos[][] diretamente.
  */
 export class Entidade {
     /**
-     * @param {number} posX
-     * @param {number} posY
-     * @param {number} sizeX
-     * @param {number} sizeY
-     * @param {Terreno} map
-     * @param {string} tipo
-     * @param {Modelo} modelo
+     * @param {number[]}  pos    Posição inicial [x, y, z]
+     * @param {Terreno}   map    Referência ao terreno
+     * @param {string}    tipo   Tipo da entidade
+     * @param {Modelo}    modelo Modelo 3D associado
      */
     constructor(pos, map, tipo, modelo = new Modelo()) {
-        this.pos = pos;
-        this.tipo = tipo;
-
-        this.map = map;
+        this.pos    = pos;
+        this.tipo   = tipo;
+        this.map    = map;
         this.modelo = modelo;
-        
-        this.gridPos = [0, 0, 0];
-        this.angulo = [0, 0, 0];
-        this.floor = 0;
+
+        this.angulo  = 0;             // graus, usado em tickMovimento
+        this.floor   = 0;
 
         this.aceleracaoMax = 5;
-        this.gravidade = 1;
-        this.deltaTime = 0;
-        this.atritoFloor = 0.5;
-        this.atritoAr = 0.2;
+        this.gravidade     = 1;
+        this.deltaTime     = 0;
+        this.atritoFloor   = 0.5;
+        this.atritoAr      = 0.2;
 
         this.velocidade = [0, 0, 0];
+
+        /**
+         * Referência à célula de dados do tile onde esta entidade está registrada.
+         * Mantido internamente; não acesse diretamente.
+         * @type {Array|null}
+         */
+        this._celulaAtual = null;
 
         entidades.push(this);
         this.getFloor();
     }
+
+    // ──────────────────────────────────────────
+    //  Loop principal
+    // ──────────────────────────────────────────
+
     /**
-     * Atualização por frame
-     * @param {number} deltaTime Tempo desde o ultimo tick
+     * Atualização por frame.
+     * @param {number} deltaTime Tempo desde o último tick (segundos)
      */
-    tick(deltaTime) {
+    tick(deltaTime){
         this.deltaTime = deltaTime;
-        this.modelo.pos = this.pos;
+        //console.log("tipo: " + this.modelo.objUrl + " mesh")
+        //console.log(this.modelo.meshes);
+
+        this.modelo.pos    = this.pos;
         this.modelo.rot[1] = utills.radians(this.angulo);
 
         this.tickLogica();
@@ -62,11 +76,11 @@ export class Entidade {
         this.applyAtrito();
 
         this.getFloor();
-        //console.log("pos= " + this.pos[2] + " chao = " + this.floor);
     }
 
     tickLogica(){}
     tickAnimacao(){}
+
     tickMovimento(){
         this.pos[0] += this.velocidade[0] * this.deltaTime;
         this.pos[1] += this.velocidade[1] * this.deltaTime;
@@ -77,78 +91,91 @@ export class Entidade {
             this.pos[1] = this.floor;
         }
     }
+
     virarParaMovimento(){
-        this.angulo = Math.atan2(this.velocidade[0], this.velocidade[2])
+        this.angulo = Math.atan2(this.velocidade[0], this.velocidade[2]);
     }
+
+    // ──────────────────────────────────────────
+    //  Física / chão
+    // ──────────────────────────────────────────
 
     /**
-     * Atualiza posição no grid espacial
-     * @returns {void}
+     * Consulta a altura do terreno na posição atual via API do Terreno,
+     * ajusta pos[1] se abaixo do chão e atualiza o grid espacial.
+     *
+     * Retorna a altura do chão, ou 0 se o chunk ainda não estiver carregado.
+     *
+     * @returns {number}
      */
-    getFloor() {
-        let x = Math.min(Math.max(this.pos[0], 0),this.map.tamanhoMapa[0]);
-        let z = Math.min(Math.max(this.pos[2], 0),this.map.tamanhoMapa[1]);
+    getFloor(){
+        const altura = this.map.getAlturaNoMundo(this.pos[0], this.pos[2]);
 
-        x = x | 0;
-        z = z | 0;
-
-        let porcentX = this.pos[0] - x;
-        let porcentZ = this.pos[2] - z;
-
-        if(this.gridPos[0] != x || this.gridPos[2] != z)this.updateMap(x, z);
-
-        let heightX = this.map.pos[x][z][0]
-        let heightZ = this.map.pos[x][z][0]
-
-        if(x < this.map.tamanhoMapa[0] - 1) heightX = this.map.pos[x][z][0] * (1 - porcentX) + this.map.pos[x+1][z][0] * porcentX;
-        if(z < this.map.tamanhoMapa[1] - 1) heightZ = this.map.pos[x][z][0] * (1 - porcentZ) + this.map.pos[x][z+1][0] * porcentZ;
-        
-        // ajusta altura baseado no terreno
-        if(this.pos[1] < (heightX + heightZ)/2){
-            this.pos[1] = (heightX + heightZ)/2;
+        if(altura === null){
+            // Chunk ainda está carregando — mantém último valor conhecido
+            return this.floor;
         }
-        this.floor = (heightX + heightZ)/2;
+
+        this.floor = altura;
+
+        // Empurra a entidade para cima se estiver abaixo do chão
+        if(this.pos[1] < this.floor){
+            this.pos[1] = this.floor;
+        }
+
+        // Atualiza o grid espacial apenas se mudou de tile
+        const tx = Math.floor(this.pos[0]);
+        const tz = Math.floor(this.pos[2]);
+
+        if(tx !== this._tileX || tz !== this._tileZ){
+            this._tileX = tx;
+            this._tileZ = tz;
+            this._celulaAtual = this.map.registrarEntidade(
+                this,
+                this.pos[0],
+                this.pos[2],
+                this._celulaAtual
+            );
+        }
+
         return this.floor;
     }
+
     onFloor(){
-        if(this.pos[1] - this.floor < 0.2) return true;
-        return false;
+        return (this.pos[1] - this.floor) < 0.2;
     }
+
     applyGravity(){
-        if(!this.onFloor() &&  this.velocidade[1] > -this.aceleracaoMax){
-            
+        if(!this.onFloor() && this.velocidade[1] > -this.aceleracaoMax){
             this.velocidade[1] -= this.gravidade * this.deltaTime;
-            console.log("tempo = " + this.deltaTime + "velo = " + this.velocidade[1]);
-            return;
         }
-        if(this.velocidade[1] == undefined) this.velocidade[1] = 0;
+        if(this.velocidade[1] == null) this.velocidade[1] = 0;
     }
+
     applyAtrito(){
-        if(this.onFloor()){
-            this.velocidade[0] = utills.aproxZero(this.velocidade[0], this.atritoFloor);
-            this.velocidade[2] = utills.aproxZero(this.velocidade[2], this.atritoFloor);
-        }else{
-            this.velocidade[0] = utills.aproxZero(this.velocidade[0], this.atritoAr);
-            this.velocidade[2] = utills.aproxZero(this.velocidade[2], this.atritoAr);
-        }
+        const atrito = this.onFloor() ? this.atritoFloor : this.atritoAr;
+        this.velocidade[0] = utills.aproxZero(this.velocidade[0], atrito);
+        this.velocidade[2] = utills.aproxZero(this.velocidade[2], atrito);
     }
-    updateMap(x, z){
-        // remove da célula antiga
-        if (this._cell) {
-            let arr = this._cell;
-            let i = arr.indexOf(this);
-            if (i !== -1) arr.splice(i, 1);
+
+    // ──────────────────────────────────────────
+    //  Utilidades
+    // ──────────────────────────────────────────
+
+    /**
+     * Remove esta entidade do grid espacial e da lista global.
+     * Chame ao destruir a entidade.
+     */
+    destroy(){
+        // Remove da célula de dados do tile
+        if(this._celulaAtual){
+            const i = this._celulaAtual.indexOf(this);
+            if(i !== -1) this._celulaAtual.splice(i, 1);
+            this._celulaAtual = null;
         }
 
-        this.gridPos[0] = x;
-        this.gridPos[2] = z;
-
-        // garante que a célula existe
-        if (!this.map.pos[x][z][4]) this.map.pos[x][z][4] = [];
-
-        // adiciona na nova célula
-        this.map.pos[x][z][4].push(this);
-
-        this._cell = this.map.pos[x][z][4];
+        // Remove da lista global
+        const i = entidades.indexOf(this);
+        if(i !== -1) entidades.splice(i, 1);
     }
 }
