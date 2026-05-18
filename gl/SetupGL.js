@@ -106,8 +106,8 @@ export class SetupGL {
         );
     }
 
-    setCamera(pos, target) {
-        const view = twgl.m4.lookAt(pos, target, [0,1,0]);
+    setCamera(pos, target, up) {
+        const view = twgl.m4.lookAt(pos, target, up);
         this.view = twgl.m4.inverse(view);
     }
 

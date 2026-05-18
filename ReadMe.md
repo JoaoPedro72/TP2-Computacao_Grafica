@@ -30,26 +30,24 @@
 - Mundo
     1. Moitas de grama (até 6%)         Quebrou ;-;
         Vento (+6%)
-    
+    1. Objetos animados (até 10%)
+- Gráficos
+    1. Neblina (fog) (4%)
 
 ## Falta fazer
 - MUITO IMPORTANTE
 - Gráficos
     1. Efeitos de partículas (até 8%)
-    1. Corrigir agua branca a noite, denovo
-- Mundo
-    1. mundo maior, se espande
 - Outros
     1. Música (3%)
 ## Se der tempo
 - Mundo
     1. Relevo usando textura (10%)
     1. Skybox, skyphere ou skydome (até 10%)
-    1. Objetos animados (até 10%)
+    
     1. deixar grama mais bonita, ta bem + -
     
 - Gráficos
-    1. Neblina (fog) (4%)
     1. Efeitos de pós-processamento (5%)
     1. :bomb: Normal mapping (8%)
     

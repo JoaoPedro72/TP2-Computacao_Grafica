@@ -1,3 +1,4 @@
+import { Player } from "./logica/Player.js";
 import { Utills } from "./Utills.js";
 const utills = new Utills();
 
@@ -6,15 +7,18 @@ export class Camera {
         this.pos = [50, 30, -2];
         this.yaw = 90; //rotação horizontal em graus
         this.pitch = -35; //rotação vertical em graus
+        this.roll = 0; // rotação lateral em graus
         this.keys = keys;
         this.speed = 0.2;
         this.sensitivity = 0.2;
         this.cameraMode = "locked";
-        this.distancia = 20;
+        this.distancia = 8;
         this.lockPos = 5;
         this.cockpitYawOffset = 0;
         this.cockpitPitchOffset = 0;
         this.fov = 90; // campo de visão em graus
+        this.up = [0,1,0];
+        this.roll = 0;
     }
     rodar(e){
         if(this.cameraMode === "locked"){
@@ -49,19 +53,23 @@ export class Camera {
         if(this.keys[7]) {this.cameraMode = "cockpit";}
         if(this.keys.c) {this.cameraMode = "inAxis";}
     }
-    updateCamera(player_pos, player_angle){
+    updateCamera(player){
         this.updateLockPos();
 
-        if(this.keys["-"] && this.distancia < 40) this.distancia += 0.5;
+        if(this.keys["-"] && this.distancia < 15) this.distancia += 0.5;
         if(this.keys["+"] && this.distancia > 3) this.distancia -= 0.5;
 
+        const playerPos = [player.pos[0],player.pos[1],player.pos[2]];
+        const playerAngle = -player.angulo - 90;
+        if(this.cameraMode !== "cockpit") this.up = [0,1,0];
         if(this.cameraMode === "free") this.moveFree();
         else if(this.cameraMode === "inAxis") this.moveInAxis();
-        else if(this.cameraMode === "locked") this.locked(player_pos, player_angle);
-        else if(this.cameraMode === "orbit") this.orbit(player_pos);
-        else if(this.cameraMode === "cockpit") this.cockpit(player_pos, player_angle);
+        else if(this.cameraMode === "locked") this.locked(playerPos, playerAngle);
+        else if(this.cameraMode === "orbit") this.orbit(playerPos);
+        else if(this.cameraMode === "cockpit") this.cockpit(player);
     }
     orbit(pos){
+        this.up = [0,1,0];
         const f = utills.normalize(utills.getFront(this.yaw, this.pitch));
         const r = utills.normalize(utills.cross(f,[0,1,0]));
 
@@ -70,6 +78,7 @@ export class Camera {
         this.pos = this.pos.map((v,i)=>v-f[i]*this.distancia);
     }
     locked(pos, angle){
+        this.up = [0,1,0];
         switch (this.lockPos) {
             case 0:
                 this.pitch = -89;
@@ -138,7 +147,8 @@ export class Camera {
         if(this.keys[" "]) this.pos[1] += this.speed;
         if(this.keys["shift"]) this.pos[1] -= this.speed;
     }
-    cockpit(pos, angle){
+
+    cockpit(player){
 
         if(this.keys["arrowleft"]) this.cockpitYawOffset -= 1;
         if(this.keys["arrowright"]) this.cockpitYawOffset += 1;
@@ -148,18 +158,34 @@ export class Camera {
         this.cockpitYawOffset = Math.max(-90,Math.min(90, this.cockpitYawOffset));
         this.cockpitPitchOffset = Math.max(-15,Math.min(15, this.cockpitPitchOffset));
 
+        const playerYaw = -player.angulo - 90;
+        const playerPitch = player.anguloFaixa[1] * (180 / Math.PI);
+        const playerRoll = -player.anguloFaixa[0] * (180 / Math.PI);
+
+        // OFFSETS DA CAMERA NO REFERENCIAL DO AVIÃO
         const frontOffset = -0.1;
         const heightOffset = 0.8;
-        const front = utills.normalize(utills.getFront(angle, 0));
 
-        this.pos = [
-            pos[0] + front[0] * frontOffset,
-            pos[1] + heightOffset,
-            pos[2] + front[2] * frontOffset
-        ];
+        const front = utills.normalize(utills.getFront(playerYaw, playerPitch));
+        const right = utills.normalize(utills.cross([0,1,0], front));
+        const up = utills.normalize(utills.cross(front, right));
 
-        this.yaw = angle + this.cockpitYawOffset;
-        this.pitch = -5 + this.cockpitPitchOffset;
+        
+        const c = Math.cos(playerRoll* Math.PI/180);
+        const s = Math.sin(playerRoll* Math.PI/180);
+
+        const rolledUp = up.map((v, i) => v*c + right[i]*s);
+        this.up = rolledUp;
+
+        this.pos = player.pos.map((p, i) => p + front[i]*frontOffset + rolledUp[i]*heightOffset);
+        
+
+        this.yaw = playerYaw + this.cockpitYawOffset;
+        this.pitch = playerPitch + this.cockpitPitchOffset;
+        this.roll = playerRoll;
+
+        console.log(playerYaw, playerPitch, playerRoll);
+        console.log(player.pos.map((v, i) => v - this.pos[i]));
     }
     getFront(){
         return utills.normalize(

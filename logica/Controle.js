@@ -31,7 +31,7 @@ export class Controle {
         // ── Sistemas ────────────────────────────────
         this.sol     = new SolModelo(setupGL);
         this.aviao   = new AviaoModelo(setupGL);
-        this.terreno = new Terreno(setupGL, [32, 32], 3);
+        this.terreno = new Terreno(setupGL, [32, 32], 5);
         this.player  = new Player([50, 20, 50], keys, this.aviao);
 
         // ── Árvores instanced ────────────────────────
@@ -87,11 +87,8 @@ export class Controle {
 
         // Carrega/descarrega chunks conforme posição do jogador
         this.terreno.tick(this.player.pos[0], this.player.pos[2]);
-
-        this.camera.updateCamera(
-            [this.player.pos[0], this.player.pos[1], this.player.pos[2]],
-            -this.player.angulo - 90
-        );
+        
+        this.camera.updateCamera(this.player);
 
         if(this.camera.cameraMode === "orbit") this.player.controls = true;
     }
