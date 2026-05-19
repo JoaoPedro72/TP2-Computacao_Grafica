@@ -32,7 +32,7 @@ export class Controle {
         this.sol     = new SolModelo(setupGL);
         this.aviao   = new AviaoModelo(setupGL);
         this.terreno = new Terreno(setupGL, [32, 32], 5);
-        this.player  = new Player([50, 20, 50], keys, this.aviao);
+        this.player  = new Player([50, 20, 50], keys, this.aviao, this.terreno);
 
         // ── Árvores instanced ────────────────────────
         // Registradas no terreno — terreno.draw() as inclui automaticamente,
