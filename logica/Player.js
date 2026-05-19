@@ -62,8 +62,8 @@ export class Player {
     faixaVirar(time){
         this.model.root.rot[2] = -this.anguloFaixa[0];
 
-        if(Math.abs(this.angulo) < 90) this.model.root.rot[0] = this.anguloFaixa[1];
-        else this.model.root.rot[0] = -this.anguloFaixa[1];
+        this.model.root.rot[0] = this.anguloFaixa[1];
+       
 
         this.model.faixa1.rot[2] = this.anguloFaixa[0];
         this.model.faixa1.rot[1] = Math.sin(time)/8 + this.anguloFaixa[0];
