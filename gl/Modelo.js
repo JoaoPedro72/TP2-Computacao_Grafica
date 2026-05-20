@@ -65,9 +65,11 @@ export class Modelo {
         let m = twgl.m4.identity();
 
         m = twgl.m4.translate(m, this.pos);
-        m = twgl.m4.rotateX(m, this.rot[0]);
+        
         m = twgl.m4.rotateY(m, this.rot[1]);
         m = twgl.m4.rotateZ(m, this.rot[2]);
+        m = twgl.m4.rotateX(m, this.rot[0]);
+        
         m = twgl.m4.scale(m, this.scale);
 
         return m;
