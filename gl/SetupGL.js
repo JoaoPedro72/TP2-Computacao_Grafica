@@ -20,6 +20,9 @@ export class SetupGL {
         this.gl.enable(this.gl.BLEND);
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 
+        this.corFogNoite = [0.03, 0.04, 0.08];
+        this.corFogDia   = [0.75, 0.85, 1.0];
+
         // ☀️ sol
         this.sunDirection = [0, 1, 0];
         this.sunStrength = 1; // 🔥 controle de intensidade
@@ -102,7 +105,7 @@ export class SetupGL {
             this.camera.fov * (Math.PI/ 180),
             this.canvas.width / this.canvas.height,
             0.1,
-            100
+            200
         );
     }
 
@@ -187,7 +190,7 @@ export class SetupGL {
         };
     }
 
-    setUniforms(lightMatrix){
+    setUniforms(lightMatrix, time){
         this._lightsBuffer.fill(0);
         this._strengthsBuffer.fill(0);
         for (let i = 0; i < Math.min(this.pointLights.length, 8); i++) {
@@ -196,8 +199,15 @@ export class SetupGL {
             this._lightsBuffer[i*3+2] = this.pointLights[i][2];
             this._strengthsBuffer[i]  = this.pointStrength[i];
         }
-        this.lights = 0
+        this.lights = 0;
 
+        const timeOfDay = time % (Math.PI*2);
+        let u_fogColor = [];
+        u_fogColor[0] = this.corFogNoite[0] + (this.corFogDia[0] - this.corFogNoite[0]) * (Math.sin(timeOfDay)+1)/2;
+        u_fogColor[1] = this.corFogNoite[1] + (this.corFogDia[1] - this.corFogNoite[1]) * (Math.sin(timeOfDay)+1)/2;
+        u_fogColor[2] = this.corFogNoite[2] + (this.corFogDia[2] - this.corFogNoite[2]) * (Math.sin(timeOfDay)+1)/2;
+
+        
         this.uniforms = {
             u_projection: this.projection,
             u_view: this.view,
@@ -217,12 +227,14 @@ export class SetupGL {
             u_time: performance.now() * 0.001,
             
             u_cameraPos: this.camera.pos,
+            u_fogColor: u_fogColor,
+            u_fogDensity: 0.005
         }
     }
     drawMesh(pos, mesh, textures, modelMatrix, programInfo, lightMatrix, isEmissive = false, time) {
-        if(utills.distanciaQuadrada(pos, this.camera.pos) > 15000 && !mesh.alwaysRender) return;
+        if(utills.distanciaQuadrada([modelMatrix[12],modelMatrix[13],modelMatrix[14]], this.camera.pos) > 15000 && !mesh.alwaysRender) return;
         if(mesh.isInvisible) return;
-        if(!this.camera.itsOnCamera(pos) && !mesh.alwaysRender) {
+        if(!this.camera.itsOnCamera([modelMatrix[12],modelMatrix[13],modelMatrix[14]]) && !mesh.alwaysRender) {
             return;
         }
         if(modelMatrix[13] < -20) {

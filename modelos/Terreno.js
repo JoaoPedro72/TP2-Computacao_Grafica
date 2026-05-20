@@ -10,6 +10,7 @@ import { Entidade } from "../logica/Entidade.js";
 import { ArvoreInstanced } from "../modelos/ArvoreInstanced.js";
 
 import * as twgl from "../twgl.full.module.js";
+import { MoinhoModelo } from "./Moinho.js";
 
 const BIOMA_UV = {
     deserto:   [1,1],
@@ -48,22 +49,23 @@ function getUVAtlas(col, row) {
 class Biomas {
     constructor(){
         this.biomas = [
-            { nome: "montanha", temp:[0.0,1.0], umi:[0.0,1.0], altura:[7.0,100.0] },
+            
             
             { nome: "deserto",  temp:[0.6,1.0], umi:[0.0,0.4], altura:[0.2,7.0] },
             { nome: "tundra",   temp:[-1.0,0.3], umi:[0.0,0.3], altura:[0.2,7.0] },
-            { nome: "neve",     temp:[-1.0,0.3], umi:[0.3,1.0], altura:[0.2,7.0] },
+            { nome: "neve",     temp:[-1.0,0.3], umi:[0.3,1.0], altura:[0.2,100.0] },
 
             { nome: "floresta", temp:[0.3,0.8], umi:[0.5,1.0], altura:[0.2,7.0] },
             { nome: "planicie", temp:[0.3,0.7], umi:[0.3,0.7], altura:[0.2,7.0] },
 
+            { nome: "montanha", temp:[0.0,1.0], umi:[0.0,1.0], altura:[7.0,100.0] },
             { nome: "praia",    temp:[0.0,1.0], umi:[0.0,1.0], altura:[-0.4,1] },
             { nome: "oceano",   temp:[0.0,1.0], umi:[0.0,1.0], altura:[-100.0,-0.4] }
         ];
         this.feature = {
             planicie: [
-                { nome: "",                     peso: 1000},
-                { nome: "prop/casa1.obj",       peso: 4},
+                { nome: "",                     peso: 4000},
+                { nome: "prop/casa1.obj",       peso: 16},
                 { nome: "prop/torre.obj",       peso: 1},
                 { nome: "pedra/pedra.obj",      peso: 1},
                 { nome: "prop/moinho.obj",      peso: 1}
@@ -689,14 +691,19 @@ export class Terreno {
                 const wX = offsetX + x;
                 const wZ = offsetZ + z;
 
+                let modelo;
                 // Posição local dentro do chunk (Y = altura do tile)
-                const modelo = new Modelo({
-                    pos: [wX, altura, wZ],
-                    setupGL: this.setupGL,
-                    objUrl: "modelos/" + featUrl
-                });
-                modelo.rot = [0, Math.random() * Math.PI * 2, 0];
-
+                if(featUrl != "prop/moinho.obj"){
+                    modelo = new Modelo({
+                        pos: [wX, altura, wZ],
+                        setupGL: this.setupGL,
+                        objUrl: "modelos/" + featUrl
+                    });
+                    modelo.rot = [0, Math.random() * Math.PI * 2, 0];
+                }else{
+                    modelo = new MoinhoModelo(this.setupGL, [wX, altura, wZ]);
+                    modelo.rot = [0, Math.random() * Math.PI * 2, 0];
+                }
                 // Adiciona ao grafo ANTES do load para que apareça assim que
                 // os meshes forem criados (o Modelo.draw ignora meshes vazios)
                 chunk.root.add(modelo);

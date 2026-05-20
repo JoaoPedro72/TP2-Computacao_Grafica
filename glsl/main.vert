@@ -5,23 +5,23 @@ attribute vec3 a_position;
 attribute vec3 a_normal;
 attribute vec2 a_texcoord;
 
-attribute vec3 a_instancePos; // posição da instância
-attribute float a_instanceRot; // rotação Y da instância
+attribute vec3 a_instancePos;   // posição da instância
+attribute float a_instanceRot;  // rotação Y da instância
 
-uniform mat4 u_model;
-uniform mat4 u_view;
-uniform mat4 u_projection;
-uniform mat4 u_lightMatrix;
+uniform mat4 u_model;           // Pontos do modelo
+uniform mat4 u_view;            //
+uniform mat4 u_projection;      //
+uniform mat4 u_lightMatrix;     //
 
-uniform float u_time;
-uniform int u_isWater;
-uniform int u_isGrass;
+uniform float u_time;           // Tempo
+uniform int u_isWater;          // Se é agua
+uniform int u_isGrass;          // Se é grama
 
 varying vec3 v_normal;
 varying vec2 v_uv;
 varying vec4 v_lightPos;
-varying vec3 v_worldPos;
-varying float v_wave;
+varying vec3 v_worldPos;        // Posição no mundo
+varying float v_wave;           // Altura da onda para colorir
 
 float hash(vec2 p){
     return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453);

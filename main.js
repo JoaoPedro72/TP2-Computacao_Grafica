@@ -56,7 +56,7 @@ async function main() {
         const speed = 0.01;
 
         const daytime = time * speed;
-        //const daytime = 5;
+        //const daytime = Math.PI/2*3;
         
         setupGL.sunDirection = [
             Math.cos(daytime),
@@ -75,14 +75,14 @@ async function main() {
 
         // 🔥 PASS 1 (shadow)
         setupGL.renderShadowPass((program, lightMatrix) => {
-            setupGL.setUniforms(lightMatrix);
+            setupGL.setUniforms(lightMatrix, daytime);
             controle.terreno.draw(program, identity,lightMatrix,time);
             controle.root.draw(program, identity, lightMatrix, time);
         });
 
         // 🔥 PASS 2 (render normal)
         setupGL.renderScene((program) => {
-            setupGL.setUniforms(lightMatrix);
+            setupGL.setUniforms(lightMatrix, daytime);
             controle.sol.draw(program, identity,lightMatrix,daytime);
             controle.terreno.draw(program, identity,lightMatrix,time);
             controle.root.draw(program, identity,lightMatrix,time);

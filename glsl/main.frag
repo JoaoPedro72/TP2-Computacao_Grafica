@@ -4,7 +4,8 @@ precision highp int;
 varying vec3 v_normal;
 varying vec2 v_uv;
 varying vec4 v_lightPos;
-varying vec3 v_worldPos;
+varying vec3 v_worldPos;        // Posição no mundo
+uniform mat4 u_view;            // Posição da camera
 
 uniform sampler2D u_texture;
 uniform sampler2D u_shadowMap;
@@ -13,10 +14,12 @@ uniform int u_useTexture;
 uniform int u_isWater;
 varying float v_wave;
 
-uniform float u_time;
 uniform float u_emissive;
 
 uniform int u_lighting;
+
+uniform vec3 u_fogColor;
+uniform float u_fogDensity;
 
 // ☀️ sol
 uniform vec3 u_sunDirection;
@@ -66,11 +69,21 @@ void main() {
         ? texture2D(u_texture, v_uv)
         : vec4(0.7,0.7,0.7,1.0);
 
+    float dist = distance(u_cameraPos, v_worldPos);
+    float fogFactor = 0.0;
+    if(u_lighting == 1){
+        //Codigo da fog aqui 
+        fogFactor = 1.0 - exp(
+            -u_fogDensity * u_fogDensity * dist * dist
+        );
 
+        fogFactor = clamp(fogFactor, 0.0, 1.0);
+    }
     
 
     // 🔥 EMISSIVO (não escurece)
     if(u_emissive > 0.0){
+        color.rgb = mix(color.rgb, u_fogColor, fogFactor);
         gl_FragColor = color;
         return;
     }
@@ -133,12 +146,19 @@ void main() {
 
         float foam = smoothstep(0.6, 1.0, waveNorm);
         float dark = smoothstep(0.0, 0.4, waveNorm);
-
-        color.rgb += foam * 0.6 ;
+        
+        float foamStrength = mix(0.08, 0.6, dayFactor);
+        color.rgb += foam * foamStrength;
         color.rgb *= 1.0 - dark * 0.4;
+
+        if(u_lighting == 1){
+            color.rgb += specular;
+            vec3 nightColor = vec3(0.2, 0.3, 0.5);
+            color.rgb = mix(nightColor, color.rgb, dayFactor);
+        }
     }
 
-    if (u_lighting == 1) {
+    if (u_lighting == 1 && u_isWater != 1) {
         color.rgb *= lighting;
         // ✨ adiciona specular
         color.rgb += specular;
@@ -147,5 +167,6 @@ void main() {
         color.rgb = mix(nightColor * color.rgb, color.rgb, dayFactor);
     }
     
+    color.rgb = mix(color.rgb, u_fogColor, fogFactor);
     gl_FragColor = color;
 }
