@@ -153,7 +153,7 @@ void main() {
 
         if(u_lighting == 1){
             color.rgb += specular;
-            vec3 nightColor = vec3(0.2, 0.3, 0.5);
+            vec3 nightColor = vec3(0.09, 0.01, 0.49);
             color.rgb = mix(nightColor, color.rgb, dayFactor);
         }
     }

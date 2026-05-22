@@ -22,6 +22,7 @@ export class Controle {
         this.setupGL = setupGL;
         this.keys    = keys;
         this.camera  = camera;
+        this.Rdist = 4
 
         this.lightingSwitch = false;
 
@@ -29,9 +30,9 @@ export class Controle {
         this.root = new Modelo({ setupGL });
 
         // ── Sistemas ────────────────────────────────
-        this.sol     = new SolModelo(setupGL);
+        this.sol     = new SolModelo(setupGL,this.Rdist);
         this.aviao   = new AviaoModelo(setupGL);
-        this.terreno = new Terreno(setupGL, [32, 32], 5);
+        this.terreno = new Terreno(setupGL, [32, 32], this.Rdist);
         this.player  = new Player([50, 20, 50], keys, this.aviao, this.terreno);
 
         // ── Árvores instanced ────────────────────────
@@ -50,7 +51,7 @@ export class Controle {
 
         // ── Cena ────────────────────────────────────
         this.root.add(this.aviao);
-        this.aviao.setPos(this.player.pos);
+        this.aviao.setPos(this.player.pos);        
 
         // Assets async em background
         this._initAsync();
