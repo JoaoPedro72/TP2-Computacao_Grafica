@@ -3,7 +3,7 @@ import { Utills } from "../Utills.js";
 const utills = new Utills();
 
 export class Player {
-    constructor(pos = [], keys = {}, model = new AviaoModelo){
+    constructor(pos = [], keys = {}, model = new AviaoModelo, terreno){
         this.pos = pos;
         this.keys = keys;
         this.angulo = 0;
@@ -12,17 +12,42 @@ export class Player {
         this.velCurva = 12;
         this.model = model;
         this.controls = true;
+        this.terreno = terreno;
+        this.pitchTerreno = 0;
+        this.hAtual = 0;
+        this.hFrente = 0;
+        this.hDist = 0;
     }
     tick(time){
+        const front = utills.normalize(utills.getFront(this.angulo, this.anguloFaixa[1]*180/Math.PI));
+        const frontDist = this.velocidade * time;
+        const lookahead = this.pos.map((v,i)=>v + front[i]*frontDist);
+        
+
         if(this.angulo > 180) this.angulo -= 360;
         if(this.angulo < -180) this.angulo += 360;
-        
+
+        this.hAtual = this.terreno.getAlturaNoMundo(this.pos[0],this.pos[2]);
+        this.hFrente = this.terreno.getAlturaNoMundo(lookahead[0],lookahead[2]);
+
+        const hAlvo = this.hFrente + 9;
+        this.hDist = hAlvo - this.pos[1];
+
+        if (this.hDist > 0.05){
+            const pitchAlvo = Math.atan((this.hDist*time)/frontDist)
+            const pitchDist = pitchAlvo - this.anguloFaixa[1];
+            this.pos[1] += time * this.hDist;
+            this.anguloFaixa[1] += time * pitchDist *1.5;
+        } else {
+            this.anguloFaixa[1] += (0 - this.anguloFaixa[1]) * time;
+        }   
+
         this.move(time);
         this.faixaVirar(time);
         if(this.controls)this.imputs(time);
-
         this.model.root.rot[1] = utills.radians(this.angulo);
         this.model.setPos(this.pos);
+
     }
     imputs(time){
         if(this.keys.w && this.velocidade < 15){
@@ -44,12 +69,12 @@ export class Player {
         if(this.keys.c) {
             this.controls = false;
         }
-        if(this.keys.shift && this.pos[1] > 15){
+        if(this.keys.shift && this.hDist < 0){
             this.pos[1] -= this.velocidade * time * 0.5;
             this.anguloFaixa[1] -= 0.05 * time * this.velocidade;
             if(this.anguloFaixa[1] < -10) this.anguloFaixa[1] = -10;
         }
-        if(this.keys[" "] && this.pos[1] < 30){
+        if(this.keys[" "] && this.pos[1] < 45){
             this.pos[1] += this.velocidade * time * 0.5;
             this.anguloFaixa[1] += 0.05 * time * this.velocidade;
             if(this.anguloFaixa[1] > 10) this.anguloFaixa[1] = 10;
