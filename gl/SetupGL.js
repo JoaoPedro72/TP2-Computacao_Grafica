@@ -105,7 +105,7 @@ export class SetupGL {
             this.camera.fov * (Math.PI/ 180),
             this.canvas.width / this.canvas.height,
             0.1,
-            200
+            300
         );
     }
 
@@ -160,7 +160,7 @@ export class SetupGL {
         gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
 
-        const dayFactor = Math.max(0.2, this.sunDirection[1] * 0.5 + 0.5);
+        const dayFactor = Math.max(0.05, this.sunDirection[1] * 0.5 + 0.5);
 
         this.gl.clearColor(
             0.5 * dayFactor,
@@ -228,7 +228,7 @@ export class SetupGL {
             
             u_cameraPos: this.camera.pos,
             u_fogColor: u_fogColor,
-            u_fogDensity: 0.005
+            u_fogDensity: 0.002
         }
     }
     drawMesh(pos, mesh, textures, modelMatrix, programInfo, lightMatrix, isEmissive = false, time) {
@@ -237,7 +237,8 @@ export class SetupGL {
         if(!this.camera.itsOnCamera([modelMatrix[12],modelMatrix[13],modelMatrix[14]]) && !mesh.alwaysRender) {
             return;
         }
-        if(modelMatrix[13] < -20) {
+        if(modelMatrix[13] < 5 && mesh.isSol) {
+            console.log("sol")
             return;
         }
         if(mesh.hasLight && this.camera.itsOnCamera(pos) && utills.distanciaQuadrada(pos, this.camera.pos) < 3000){

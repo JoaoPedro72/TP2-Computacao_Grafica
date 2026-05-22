@@ -67,7 +67,7 @@ async function main() {
         //setupGL.updateProjection(window);
 
         
-        controle.sol.root.pos = camera.pos;
+        controle.sol.root.pos = [controle.player.pos[0],0,controle.player.pos[2]];
         setupGL.setCamera(camera.pos, camera.getTarget(), camera.up);
 
         const lightMatrix = setupGL.computeLightMatrix();
@@ -76,6 +76,7 @@ async function main() {
         // 🔥 PASS 1 (shadow)
         setupGL.renderShadowPass((program, lightMatrix) => {
             setupGL.setUniforms(lightMatrix, daytime);
+            controle.sol.oceano.draw(program, identity,lightMatrix,daytime);
             controle.terreno.draw(program, identity,lightMatrix,time);
             controle.root.draw(program, identity, lightMatrix, time);
         });
@@ -94,6 +95,8 @@ async function main() {
                 <div> FPS:    ${fps}
                 </div>
                 <div> ANGULO: ${controle.player.angulo | 0}
+                </div>
+                <div> POS: ${controle.player.pos[0] | 0} ${controle.player.pos[1] | 0} ${controle.player.pos[2] | 0}
                 </div>
             `;
             frames = 0;
