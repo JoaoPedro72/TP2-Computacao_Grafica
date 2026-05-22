@@ -184,8 +184,6 @@ export class Camera {
         this.pitch = playerPitch + this.cockpitPitchOffset;
         this.roll = playerRoll;
 
-        console.log(playerYaw, playerPitch, playerRoll);
-        console.log(player.pos.map((v, i) => v - this.pos[i]));
     }
     getFront(){
         return utills.normalize(

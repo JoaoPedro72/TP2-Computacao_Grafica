@@ -14,37 +14,39 @@ export class Player {
         this.controls = true;
         this.terreno = terreno;
         this.pitchTerreno = 0;
+        this.hAtual = 0;
+        this.hFrente = 0;
+        this.hDist = 0;
     }
     tick(time){
+        const front = utills.normalize(utills.getFront(this.angulo, this.anguloFaixa[1]*180/Math.PI));
+        const frontDist = this.velocidade * time;
+        const lookahead = this.pos.map((v,i)=>v + front[i]*frontDist);
+        
+
         if(this.angulo > 180) this.angulo -= 360;
         if(this.angulo < -180) this.angulo += 360;
-        
+
+        this.hAtual = this.terreno.getAlturaNoMundo(this.pos[0],this.pos[2]);
+        this.hFrente = this.terreno.getAlturaNoMundo(lookahead[0],lookahead[2]);
+
+        const hAlvo = this.hFrente + 9;
+        this.hDist = hAlvo - this.pos[1];
+
+        if (this.hDist > 0.05){
+            const pitchAlvo = Math.atan((this.hDist*time)/frontDist)
+            const pitchDist = pitchAlvo - this.anguloFaixa[1];
+            this.pos[1] += time * this.hDist;
+            this.anguloFaixa[1] += time * pitchDist *1.5;
+        } else {
+            this.anguloFaixa[1] += (0 - this.anguloFaixa[1]) * time;
+        }   
+
         this.move(time);
         this.faixaVirar(time);
         if(this.controls)this.imputs(time);
-
         this.model.root.rot[1] = utills.radians(this.angulo);
         this.model.setPos(this.pos);
-        this.h = this.terreno.getAlturaNoMundo(
-            this.pos[0],
-            this.pos[2]
-        );
-
-        if(this.h != null){
-
-            const alvo = this.h + 8;
-            const dist = alvo - this.pos[1];
-
-            if(dist > 0.01){
-
-                const subida = dist * time;
-                this.pos[1] += subida;
-                const alvoPitch = subida*2;
-                this.pitchTerreno +=(alvoPitch - this.pitchTerreno) * time;
-            }
-            else{
-                this.pitchTerreno +=(0 - this.pitchTerreno) * time;}
-        }
 
     }
     imputs(time){
@@ -67,7 +69,7 @@ export class Player {
         if(this.keys.c) {
             this.controls = false;
         }
-        if(this.keys.shift && this.pos[1] > this.h+8){
+        if(this.keys.shift && this.hDist < 0){
             this.pos[1] -= this.velocidade * time * 0.5;
             this.anguloFaixa[1] -= 0.05 * time * this.velocidade;
             if(this.anguloFaixa[1] < -10) this.anguloFaixa[1] = -10;
@@ -85,7 +87,7 @@ export class Player {
     faixaVirar(time){
         this.model.root.rot[2] = -this.anguloFaixa[0];
 
-        this.model.root.rot[0] = this.anguloFaixa[1] + this.pitchTerreno;
+        this.model.root.rot[0] = this.anguloFaixa[1];
        
 
         this.model.faixa1.rot[2] = this.anguloFaixa[0];
