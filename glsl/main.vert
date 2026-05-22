@@ -15,6 +15,7 @@ uniform mat4 u_lightMatrix;     //
 
 uniform float u_time;           // Tempo
 uniform int u_isWater;          // Se é agua
+uniform int u_hasWaves;       // Se tem ondas (apenas água)
 uniform int u_isGrass;          // Se é grama
 
 varying vec3 v_normal;
@@ -58,7 +59,7 @@ void main() {
     float wave = 0.0;
 
     vec4 worldPos = u_model * vec4(pos, 1.0);
-    if(u_isWater == 1){
+    if(u_hasWaves == 1){
 
         float n = smoothNoise(worldPos.xz * 0.1);
 

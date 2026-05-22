@@ -656,6 +656,7 @@ export class Terreno {
             bufferInfo,
             material: "atlas",
             isWater: true,
+            hasWaves: true,
             alwaysRender: true,
             specularStrength: 1.5,
             shininess: 128

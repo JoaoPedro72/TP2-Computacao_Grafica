@@ -272,6 +272,7 @@ export class SetupGL {
         this.uniforms.u_useTexture =    tex ? 1 : 0;
         // tipos
         this.uniforms.u_isWater =       mesh.isWater ? 1 : 0;
+        this.uniforms.u_hasWaves =      mesh.hasWaves ? 1 : 0;
         this.uniforms.u_isGrass =       mesh.isGrass ? 1 : 0;
         this.uniforms.u_isInstanced =   0;
         // brilho e reflexo de luz

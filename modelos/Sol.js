@@ -32,7 +32,7 @@ export class SolModelo{
         this.oceano = new Modelo({
             pos: [0, -1, 0],
             rot: [0, 0, 0],
-            scale: [(this.Rdist+3)*32, (this.Rdist+3)*32, (this.Rdist+3)*32],
+            scale: [(this.Rdist+3.5)*32, (this.Rdist+3.5)*32, (this.Rdist+3.5)*32],
             setupGL: this.setupGL,
             objUrl: "modelos/sol/agua.obj"
         });
@@ -58,7 +58,7 @@ export class SolModelo{
             mesh.alwaysRender = true;
         });
         this.oceano.meshes.forEach(mesh => {
-            mesh.isWater = false
+            mesh.isWater = true;
             mesh.alwaysRender = true;
             mesh.specularStrength = 2,
             mesh.shininess = 256
