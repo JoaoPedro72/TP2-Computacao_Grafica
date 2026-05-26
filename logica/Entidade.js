@@ -30,10 +30,10 @@ export class Entidade {
         this.map    = map;
         this.modelo = modelo;
 
-        this.angulo  = 0;             // graus, usado em tickMovimento
+        this.angulo  = modelo.rot[1];             // graus, usado em tickMovimento
         this.floor   = 0;
 
-        this.aceleracaoMax = 5;
+        this.aceleracaoMax = 2;
         this.gravidade     = 1;
         this.deltaTime     = 0;
         this.atritoFloor   = 0.5;
@@ -66,7 +66,7 @@ export class Entidade {
         //console.log(this.modelo.meshes);
 
         this.modelo.pos    = this.pos;
-        this.modelo.rot[1] = utills.radians(this.angulo);
+        this.modelo.rot[1] = this.angulo;
 
         this.tickLogica();
         this.tickAnimacao();
@@ -154,8 +154,8 @@ export class Entidade {
 
     applyAtrito(){
         const atrito = this.onFloor() ? this.atritoFloor : this.atritoAr;
-        this.velocidade[0] = utills.aproxZero(this.velocidade[0], atrito);
-        this.velocidade[2] = utills.aproxZero(this.velocidade[2], atrito);
+        this.velocidade[0] = utills.aproxZero(this.velocidade[0], atrito * this.deltaTime);
+        this.velocidade[2] = utills.aproxZero(this.velocidade[2], atrito * this.deltaTime);
     }
 
     // ──────────────────────────────────────────

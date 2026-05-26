@@ -83,7 +83,7 @@ void main() {
 
     // 🔥 EMISSIVO (não escurece)
     if(u_emissive > 0.0){
-        color.rgb = mix(color.rgb, u_fogColor, fogFactor);
+        //color.rgb = mix(color.rgb, u_fogColor, fogFactor);
         gl_FragColor = color;
         return;
     }

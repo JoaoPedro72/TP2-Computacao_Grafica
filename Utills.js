@@ -1,3 +1,5 @@
+//import * as twgl from "./twgl.full.module.js";
+
 export class Utills {
     constructor() {}
 
@@ -141,5 +143,49 @@ export class Utills {
         const dz = a[2] - b[2];
 
         return dx*dx + dy*dy + dz*dz;
+    }
+
+    hash(p = []){
+        const f = Math.sin(this.dot(p, [127.1,311.7])) * 43758.5453;
+        return f - Math.floor(f);
+    }
+
+    smoothNoise(p = []){
+        const i = [Math.floor(p[0]),Math.floor(p[1])];
+        const f = p - i;
+
+        const a = this.hash(i);
+        const b = this.hash(i + [1.0,0.0]);
+        const c = this.hash(i + [0.0,1.0]);
+        const d = this.hash(i + [1.0,1.0]);
+
+        const u = f*f*(3.0-2.0*f);
+
+        return this.mix(a,b,u.x) +
+            (c-a)*u.y*(1.0-u.x) +
+            (d-b)*u.x*u.y;
+    }
+
+    dot(a, b) {
+        return (a[0] * b[0]) + (a[1] * b[1]) + (a[2] * b[2]);
+    }
+
+    mix(a, b, t) {
+        return a * (1 - t) + b * t;
+    }
+
+    wave(worldPos, time){
+        const n = this.smoothNoise(worldPos * 0.1);
+
+        const amplitude = this.mix(0.15, 0.5, n);
+        const freq = this.mix(0.2, 0.7, n);
+        const phase = n * 6.28318;
+
+        let wave =
+            Math.sin(worldPos[0] * freq + time + phase) +
+            Math.cos(worldPos[2] * freq + time * 0.8 + phase);
+
+        wave *= amplitude * 0.8;
+        return wave;
     }
 }

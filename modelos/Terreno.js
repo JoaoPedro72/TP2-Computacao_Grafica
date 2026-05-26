@@ -6,6 +6,7 @@
 import { generateGrid } from "../PerlinNoise.js";
 import { Modelo } from "../gl/Modelo.js";
 import { SetupGL } from "../gl/SetupGL.js";
+import { Barco } from "../logica/Barco.js";
 import { Entidade } from "../logica/Entidade.js";
 import { ArvoreInstanced } from "../modelos/ArvoreInstanced.js";
 
@@ -84,6 +85,10 @@ class Biomas {
                 { nome: "",                     peso: 180},
                 { nome: "pedra/pedra.obj",      peso: 2},
                 { nome: "prop/torre.obj",       peso: 1}
+            ],
+            oceano: [
+                { nome: "",                     peso: 4000},
+                { nome: "agua/Barco.obj",           peso: 1}
             ]
         }
     }
@@ -700,17 +705,21 @@ export class Terreno {
                         setupGL: this.setupGL,
                         objUrl: "modelos/" + featUrl
                     });
-                    modelo.rot = [0, Math.random() * Math.PI * 2, 0];
+                    modelo.rot = [0, Math.random() * 360, 0];
                 }else{
                     modelo = new MoinhoModelo(this.setupGL, [wX, altura, wZ]);
-                    modelo.rot = [0, Math.random() * Math.PI * 2, 0];
+                    modelo.rot = [0, 0, 0];
                 }
                 // Adiciona ao grafo ANTES do load para que apareça assim que
                 // os meshes forem criados (o Modelo.draw ignora meshes vazios)
                 chunk.root.add(modelo);
 
                 
-                const ent = new Entidade([wX, altura, wZ], this, "feature", modelo);
+                let ent;
+
+                if(featUrl === "agua/Barco.obj") ent = new Barco([wX, 1, wZ], this, "barco", modelo);
+                else ent = new Entidade([wX, altura, wZ], this, "feature", modelo);
+
                 chunk.entidades.push(ent);
 
                 await modelo.loadFromOBJ();
@@ -801,6 +810,7 @@ export class Terreno {
         const hx1 = h01 * (1 - px) + h11 * px;
         return hx0 * (1 - pz) + hx1 * pz;
     }
+    
 
     /**
      * Registra ou move uma entidade na célula de dados do tile mundial (wx, wz).

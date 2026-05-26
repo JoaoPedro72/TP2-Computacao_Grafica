@@ -228,7 +228,7 @@ export class SetupGL {
             
             u_cameraPos: this.camera.pos,
             u_fogColor: u_fogColor,
-            u_fogDensity: 0.002
+            u_fogDensity: 0.005
         }
     }
     drawMesh(pos, mesh, textures, modelMatrix, programInfo, lightMatrix, isEmissive = false, time) {

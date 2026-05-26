@@ -67,7 +67,7 @@ async function main() {
         //setupGL.updateProjection(window);
 
         
-        controle.sol.root.pos = [controle.player.pos[0],0,controle.player.pos[2]];
+        controle.sol.root.pos = [controle.player.pos[0],-1,controle.player.pos[2]];
         setupGL.setCamera(camera.pos, camera.getTarget(), camera.up);
 
         const lightMatrix = setupGL.computeLightMatrix();
@@ -84,9 +84,9 @@ async function main() {
         // 🔥 PASS 2 (render normal)
         setupGL.renderScene((program) => {
             setupGL.setUniforms(lightMatrix, daytime);
-            controle.sol.draw(program, identity,lightMatrix,daytime);
             controle.terreno.draw(program, identity,lightMatrix,time);
             controle.root.draw(program, identity,lightMatrix,time);
+            controle.sol.draw(program, identity,lightMatrix,daytime);
         });
 
         if(time > segundos){
