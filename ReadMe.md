@@ -29,6 +29,7 @@
     1. Objetos animados (até 10%)                   Moinho
     1. Skybox, skyphere ou skydome (até 10%)        Esta servindo apenas para aliviar oque aparece de novo na tela
     1. Mundo Procedural com sistema de biomas baseado em umidade, altura e temperatura
+    1. Música (3%)
     
 
 ## Fazendo
@@ -38,8 +39,6 @@
 ## Falta fazer
 - Gráficos
     1. Efeitos de partículas (até 8%)
-- Outros
-    1. Música (3%)
 ## Se der tempo
 - Mundo
     1. Relevo usando textura (10%)

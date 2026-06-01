@@ -3,6 +3,8 @@ import { Camera } from "./Camera.js";
 
 import { Controle } from "./logica/Controle.js";
 
+import { ControleSom } from "./logica/ControleSom.js";
+
 import * as twgl from "./twgl.full.module.js";
 
 let keys = {};
@@ -36,6 +38,7 @@ async function main() {
 
     await setupGL.createProgram();
     setupGL.updateProjection(window);
+
 
     const controle = new Controle(setupGL, keys, camera);
 

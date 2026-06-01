@@ -10,6 +10,8 @@ import { ArvoreInstanced } from "../modelos/ArvoreInstanced.js";
 import { SetupGL } from "../gl/SetupGL.js";
 import { Camera } from "../Camera.js";
 
+import { ControleSom } from "./ControleSom.js";
+
 const utills = new Utills();
 
 export class Controle {
@@ -34,6 +36,8 @@ export class Controle {
         this.aviao   = new AviaoModelo(setupGL);
         this.terreno = new Terreno(setupGL, [32, 32], this.Rdist);
         this.player  = new Player([50, 20, 50], keys, this.aviao, this.terreno);
+        this.sons   = new ControleSom();
+        this.sons.iniciar();
 
         // ── Árvores instanced ────────────────────────
         // Registradas no terreno — terreno.draw() as inclui automaticamente,
@@ -76,6 +80,7 @@ export class Controle {
 
     tick(time){
         this._keysCommands();
+        this.sons.atualizar(this.player.velocidade);
 
         this.player.tick(time);
 
