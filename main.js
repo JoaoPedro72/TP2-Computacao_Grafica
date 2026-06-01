@@ -41,6 +41,9 @@ async function main() {
 
 
     const controle = new Controle(setupGL, keys, camera);
+    document.addEventListener("click", () => {
+        controle.sons.iniciar();
+    }, { once: true });
 
     let deltaTime = 0;
     let antes = 0;

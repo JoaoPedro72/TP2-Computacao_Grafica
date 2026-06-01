@@ -37,7 +37,6 @@ export class Controle {
         this.terreno = new Terreno(setupGL, [32, 32], this.Rdist);
         this.player  = new Player([50, 20, 50], keys, this.aviao, this.terreno);
         this.sons   = new ControleSom();
-        this.sons.iniciar();
 
         // ── Árvores instanced ────────────────────────
         // Registradas no terreno — terreno.draw() as inclui automaticamente,
