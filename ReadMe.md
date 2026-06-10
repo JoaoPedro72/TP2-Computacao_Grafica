@@ -5,14 +5,14 @@
 ## [Link](https://joaopedro72.github.io/TP2-Computacao_Grafica/tela.html)
 
 ## Controles
-ad - para virar
-ws - acelerar/freiar
-spaço - subir
-shift - descer
-l - desliga modelo de iluminação
-1 a 7 - Mudar posição da camera
-setas - virar camera no cockpitch
-c - freecam
+- ad - para virar
+- ws - acelerar/freiar
+- spaço - subir
+- shift - descer
+- l - desliga modelo de iluminação
+- 1 a 7 - Mudar posição da camera
+- setas - virar camera no cockpitch
+- c - freecam
 
 ## Feito
 - Câmera
